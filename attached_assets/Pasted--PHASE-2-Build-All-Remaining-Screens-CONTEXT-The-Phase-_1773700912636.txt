@@ -1,0 +1,429 @@
+# PHASE 2 — Build All Remaining Screens
+
+## CONTEXT
+The Phase 1 UI is built: auth pages, patient dashboard, admin dashboard, appointment booking flow (steps 1-4), patient sidebar layout, admin sidebar layout, and admin patient list. These are UI shells — Supabase wiring will happen later in Cursor/Claude Code.
+
+Now build the remaining screen UIs. Same approach: focus on beautiful, complete UI with proper component structure. Use mock/placeholder data where needed — all Supabase queries will be wired up later.
+
+**REMINDER: Do NOT use Replit's built-in database or Replit Auth. All data references should use the Supabase client pattern already established in the project. If the Supabase client files exist, use them. If not, create placeholder data fetching functions that we'll wire up later.**
+
+**REMINDER: Follow the Pulse & Function design system — forest green (#2C3E2D) primary, warm cream (#F5EDE3) backgrounds, terracotta (#C4884D) accents, pill-shaped buttons, DM Sans headings, warm card borders (#E8E2D8). Do NOT use blue, cold gray, or default shadcn colour scheme.**
+
+---
+
+## SCREEN 1: Intake Form (/intake)
+
+A digital intake form that patients complete before their first appointment. Single-page form with sections, not a multi-step wizard.
+
+### Layout:
+- Page title: "Pre-Appointment Intake Form"
+- Subtitle: "Please complete this form before your first consultation. It helps Dr Sarah prepare for your appointment."
+- Progress indicator at top showing completion percentage
+- Form sections separated by subtle dividers
+- Sticky "Save & Submit" button at bottom
+
+### Form Sections:
+
+**Section 1 — Personal Details**
+- Full name (text input, pre-filled from registration if available)
+- Date of birth (date picker)
+- Address (textarea, 2 lines)
+- Email (text input, pre-filled)
+- Mobile number (text input, pre-filled)
+
+**Section 2 — Emergency Contact**
+- Contact name (text input)
+- Contact phone number (text input)
+- Relationship (dropdown: Spouse/Partner, Parent, Sibling, Friend, Other)
+
+**Section 3 — GP Information**
+- GP name (text input)
+- GP practice name (text input)
+- GP practice address (text input, optional)
+
+**Section 4 — Medical Information**
+- Current medications (textarea with placeholder: "List any medications you are currently taking, including dosage if known")
+- Known allergies (textarea with placeholder: "List any known allergies — food, medication, environmental")
+- Primary health concerns (textarea with placeholder: "What are your main health concerns or reasons for booking this consultation? Please share as much detail as you're comfortable with — this helps Dr Sarah prepare for your appointment." — make this field larger, 4-5 rows minimum)
+
+**Section 5 — Consent**
+Three checkboxes, all required:
+- [ ] "I agree to the Terms & Conditions" (link to T&C page)
+- [ ] "I consent to the processing of my personal data in accordance with the Privacy Policy" (link to Privacy Policy)
+- [ ] "I understand that Dr Sarah Al-Temimi is not acting as a replacement for my regular GP and will not be prescribing medication during nutritional consultations"
+
+### Behaviour:
+- Form auto-saves on field blur (show small "Saved" indicator)
+- Validation: all required fields checked before submission
+- On submit: show success state — "Thank you! Your intake form has been submitted. Dr Sarah will review it before your appointment."
+- If already completed: show read-only view of submitted form with an "Edit" button
+
+---
+
+## SCREEN 2: Food Diary (/food-diary)
+
+An interactive 7-day food diary. This is NOT a simple form — it's a structured daily logging tool.
+
+### Layout:
+- Page title: "7-Day Food Diary"
+- Subtitle: "Record your meals, drinks, and symptoms for 7 consecutive days. Be honest — don't change your diet for the diary! Dr Sarah will review this before your consultation."
+- Day selector: horizontal tab/pill bar showing Day 1 through Day 7, with dates shown (e.g., "Day 1 — Mon 17 Mar"). Active day is highlighted. Completed days show a green checkmark. Incomplete days show a hollow circle.
+- Progress bar below the tabs: "3 of 7 days completed"
+
+### Per-Day Form (shown when a day tab is selected):
+Each day has these meal slots, displayed as stacked cards:
+
+**Breakfast**
+- Time (time picker, e.g., "08:30")
+- What did you eat? (text input, generous width)
+- Approximate amount (text input — e.g., "2 slices toast, 1 cup coffee")
+- Location (dropdown pill selector: At Home, Restaurant/Café, Takeaway, At Desk, Other)
+
+**Morning Snack**
+- Same fields as breakfast (time, what, amount, location)
+- "No snack" toggle — if toggled, collapses the fields
+
+**Lunch**
+- Same fields (time, what, amount, location)
+
+**Afternoon Snack**
+- Same fields with "No snack" toggle
+
+**Dinner**
+- Same fields (time, what, amount, location)
+
+**Evening Snack**
+- Same fields with "No snack" toggle
+
+**Additional Drinks**
+- Text area: "List any additional drinks throughout the day (water, tea, coffee, juice, alcohol, etc.) with approximate quantities"
+
+**Symptoms**
+- Text area: "Note any symptoms you experienced today — digestive issues, energy levels, mood, headaches, sleep quality, etc. Brief notes are fine."
+
+### Design Details:
+- Each meal slot is a card with a subtle left border in forest green
+- Collapsed "No snack" state shows a thin gray card with "No snack" text
+- Auto-save on every field blur with subtle "Saved" toast
+- "Mark Day as Complete" button at the bottom of each day
+- When all 7 days are complete, show a summary view and a "Submit to Dr Sarah" button
+- Empty state for new diary: "Start your food diary by selecting Day 1 and recording your meals."
+
+---
+
+## SCREEN 3: Documents (/documents)
+
+Where patients view their lab results and upload their own files.
+
+### Layout:
+- Page title: "My Documents"
+- Filter pills at top: All | Lab Results | My Uploads | Food Diaries | Intake Forms
+- Upload button (top right): "Upload Document" — opens a modal or drawer
+
+### Document List:
+Each document is a card/row showing:
+- File type icon (different icon for PDF, image, Word doc)
+- Type badge (e.g., "Lab Result" in green pill, "My Upload" in warm pill)
+- Lab provider badge if applicable (e.g., "TDL" or "GutID" or "TeamGene")
+- File name
+- Date uploaded
+- Uploaded by (Dr Sarah or Self)
+- Notes from Dr Sarah (if any, shown as a small quote below the file name)
+- Download button (icon)
+- View button (for PDFs/images, opens in a modal or new tab)
+
+### Upload Modal:
+- Drag-and-drop zone with "Drop files here or click to browse" text
+- File type info: "Accepted: PDF, JPG, PNG, DOCX — Max 25MB"
+- Optional "Notes" text field (for context about what the file is)
+- Upload button
+
+### Empty State:
+"No documents yet. Your lab results and reports will appear here once Dr Sarah uploads them. You can also upload your own medical records or previous test results."
+
+---
+
+## SCREEN 4: Messages (/messages)
+
+Two states depending on membership status.
+
+### State A — Member (has active membership):
+Full messaging interface.
+
+**Layout:**
+- Left side (hidden on mobile): conversation metadata — "Conversation with Dr Sarah", patient's membership badge, conversation status
+- Main area: message thread, scrollable, newest at bottom
+- Bottom: message input bar
+
+**Message Thread:**
+- Messages from patient: right-aligned, forest green background (#2C3E2D), cream text
+- Messages from Dr Sarah: left-aligned, cream background (#FAF6EF), dark text, with small "Dr Sarah" label and avatar
+- Each message shows timestamp (relative: "2 hours ago", "Yesterday at 3:15 PM")
+- File attachments shown as clickable cards below the message text (file name + size + download icon)
+- "Read" indicator (subtle checkmarks) on patient's messages
+
+**Message Input:**
+- Text input stretching full width
+- Attachment button (paperclip icon) — opens file picker
+- Send button (arrow icon, forest green)
+- Above the input: "Messages are typically responded to within 24–48 hours during business hours. This is not for medical emergencies."
+
+**Loading state:** Skeleton message bubbles
+
+### State B — Non-member:
+- Clean card in the centre of the page
+- Icon: locked message icon
+- Title: "Direct Messaging with Dr Sarah"
+- Body: "Messaging is available to membership patients. As a member, you can message Dr Sarah directly for follow-up questions, supplement guidance, and ongoing support between consultations."
+- CTA button: "Explore Membership Plans →" (links to membership/pricing page)
+- Below: "Already have questions? Book a follow-up consultation instead →" (links to booking)
+
+---
+
+## SCREEN 5: Supplements (/supplements)
+
+Personalised supplement recommendations from Dr Sarah.
+
+### Layout:
+- Page title: "My Supplements"
+- Subtitle: "Personalised supplement recommendations from Dr Sarah based on your consultations."
+- Grid of supplement cards (2 columns on desktop, 1 on mobile)
+
+### Supplement Card:
+- Product name (bold)
+- Brand name (secondary text)
+- Dosage instructions (e.g., "1 capsule with breakfast")
+- Notes from Dr Sarah (e.g., "To support gut microbiome diversity")
+- "Purchase" button (pill-shaped, terracotta accent colour) — links to external URL in new tab
+- If the brand is Deeply: show a callout badge "Use code DRSARAH30 for 30% off"
+
+### Empty State:
+"Your personalised supplement recommendations will appear here after your consultation with Dr Sarah. She'll tailor recommendations specifically to your health needs and test results."
+
+### Mock Data (for UI development):
+```
+[
+  { name: "Omega-3 DHA + EPA", brand: "Bare Biology", dosage: "1 teaspoon daily with food", notes: "Essential for reducing inflammation and supporting brain function", url: "https://www.barebiology.com" },
+  { name: "Gut Health Shot", brand: "Deeply", dosage: "1 shot daily, preferably in the morning", notes: "Prebiotic fibre to support microbiome diversity", url: "https://www.deeply.uk", discountCode: "DRSARAH30" },
+  { name: "Magnesium Taurate", brand: "Pure Encapsulations", dosage: "2 capsules before bed", notes: "To support sleep quality and muscle recovery", url: "https://www.pureencapsulations.co.uk" },
+  { name: "Vitamin D3 + K2", brand: "Wild Nutrition", dosage: "1 capsule daily with breakfast", notes: "Your blood test showed low vitamin D — this combination ensures proper calcium absorption", url: "https://www.wildnutrition.com" },
+]
+```
+
+---
+
+## SCREEN 6: Account (/account)
+
+Patient account management page.
+
+### Layout:
+Tabbed interface or sectioned single page:
+
+**Profile Section:**
+- Editable fields: Full name, email, phone, address, date of birth
+- Profile photo upload (optional — avatar with initials as default)
+- "Save Changes" button
+
+**Membership Section (if member):**
+- Current tier badge and name (e.g., "Essential — £420/month")
+- Membership status (Active, Cancelled, Past Due)
+- Member since date
+- Next billing date
+- Consultation credits: "1 of 2 used this month" with a visual progress indicator
+- "Change Plan" button → leads to tier comparison
+- "Cancel Membership" button → confirmation dialog explaining the 3-month minimum commitment
+
+**Membership Section (if not member):**
+- Upsell card: "Upgrade to Membership" with tier comparison and CTA
+
+**Billing History:**
+- Table/list of past payments: Date, Description (e.g., "Follow-Up Consultation" or "Essential Membership — March 2026"), Amount, Status (Paid/Failed/Refunded), Invoice download link
+- Note: "Invoices are generated by Stripe" (placeholder until Stripe connected)
+
+**Notification Preferences:**
+- Toggle switches for: Appointment reminders, New message notifications, Lab results notifications, Food diary reminders, Marketing/newsletter
+- "Save Preferences" button
+
+**Danger Zone (bottom):**
+- "Delete Account" — with clear warning text about data retention requirements
+
+---
+
+## SCREEN 7: Admin Patient Detail (/admin/patients/[id])
+
+The most complex admin screen. Comprehensive view of a single patient.
+
+### Layout:
+- Back button: "← All Patients"
+- Patient header: Name (large), email, phone, membership badge, "Last seen: [date]"
+- Tabbed navigation below the header
+
+### Tabs:
+
+**Overview Tab:**
+- Contact details card (name, email, phone, address, DOB)
+- Membership status card (tier, status, credits used/total, billing dates)
+- Next appointment card
+- Recent activity timeline (last 5-10 events: appointment booked, form submitted, message sent, document uploaded)
+
+**Appointments Tab:**
+- List of all appointments for this patient (upcoming + past)
+- Each shows: date, time, type, format, status, admin notes
+- "Add Notes" action on each past appointment (textarea that saves)
+
+**Documents Tab:**
+- Same document list as the patient sees, but with an additional "Upload Lab Results" button
+- Upload Lab Results form: file upload + lab provider dropdown (TDL, GutID, TeamGene) + notes field + toggle "Notify patient about new results"
+- Existing documents with delete option
+
+**Messages Tab:**
+- Full conversation thread with this patient (same as patient's message view but from admin perspective)
+- Message input with reply + file attachment
+- Quick-reply dropdown: select from saved templates to insert text
+- Conversation status selector: Active / Needs Follow-Up / Resolved
+
+**Supplements Tab:**
+- List of current supplement recommendations for this patient
+- "Add Recommendation" button → modal with:
+  - Dropdown to select from the supplement catalogue (pre-loaded brands)
+  - Or "Custom supplement" option with manual name/brand/URL fields
+  - Dosage instructions (text input)
+  - Notes for patient (text area)
+- Each existing recommendation: Edit / Remove actions
+- Toggle "Active" status on each supplement
+
+**Notes Tab:**
+- Private clinical notes (NOT visible to patient)
+- Chronological list of dated notes
+- "Add Note" button with text area and date picker
+- Each note shows date, content, and edit/delete actions
+
+**Forms Tab:**
+- Intake form: shows completed form data in read-only format, or "Not yet submitted" status
+- Food diaries: list of submitted food diaries with view button → opens read-only diary view
+
+---
+
+## SCREEN 8: Admin Messages (/admin/messages)
+
+Unified inbox for all patient message threads.
+
+### Layout:
+- Two-panel layout (desktop): thread list on left, active conversation on right
+- Single panel on mobile: thread list, tap to open conversation
+
+**Thread List (left panel):**
+- Each thread shows: Patient name, membership tier badge, last message preview (truncated), timestamp, unread indicator (dot or count badge in terracotta)
+- Sort by most recent message
+- Filter pills: All | Unread | Needs Follow-Up | Resolved
+- Search bar at top
+
+**Conversation Panel (right panel):**
+- Patient name + membership badge at top
+- Conversation status selector (Active / Needs Follow-Up / Resolved)
+- Message thread (same as patient view)
+- Reply input with:
+  - Text area
+  - File attachment button
+  - Quick-reply dropdown (select template → inserts text into input, editable before sending)
+  - Send button
+
+**Empty State (no conversations):**
+"No messages yet. Conversations will appear here when membership patients send you messages."
+
+---
+
+## SCREEN 9: Admin Supplement Catalogue (/admin/supplements)
+
+Master list of supplements Dr Sarah recommends.
+
+### Layout:
+- Page title: "Supplement Catalogue"
+- "Add Product" button (top right)
+- Table/card list of all supplements
+
+### Product Row/Card:
+- Product name (bold)
+- Brand
+- Default dosage
+- Purchase URL (truncated, clickable)
+- Discount code (if any)
+- Active/Inactive toggle
+- Edit / Archive actions
+
+### Add/Edit Product Modal:
+- Product name (text input)
+- Brand (dropdown with pre-loaded options: Deeply, Terranova, Wild Nutrition, Pure Encapsulations, Ancient and Brave, Biogena, Bare Biology + "Other" with custom input)
+- Default dosage (text input)
+- Purchase URL (text input)
+- Discount code (text input, optional)
+- Notes (textarea, optional)
+- Save / Cancel buttons
+
+### Pre-load the catalogue with mock data:
+```
+[
+  { name: "Gut Health Shot", brand: "Deeply", dosage: "1 shot daily", url: "https://www.deeply.uk", discountCode: "DRSARAH30", active: true },
+  { name: "Omega-3 Lion's Mane", brand: "Bare Biology", dosage: "1 tsp daily", url: "https://www.barebiology.com", active: true },
+  { name: "Vitamin D3 + K2", brand: "Wild Nutrition", dosage: "1 capsule daily", url: "https://www.wildnutrition.com", active: true },
+  { name: "Magnesium Taurate", brand: "Pure Encapsulations", dosage: "2 capsules before bed", url: "https://www.pureencapsulations.co.uk", active: true },
+  { name: "True Collagen", brand: "Ancient and Brave", dosage: "1 scoop in hot drink", url: "https://www.ancientandbrave.earth", active: true },
+  { name: "Magnesium Citrate", brand: "Biogena", dosage: "1 capsule with dinner", url: "https://www.biogena.com", active: true },
+  { name: "Terranova Green Superblend", brand: "Terranova", dosage: "1 tsp daily in smoothie", url: "https://www.terranovahealth.com", active: true },
+]
+```
+
+---
+
+## SCREEN 10: Admin Settings (/admin/settings)
+
+Practice settings page.
+
+### Layout:
+Sectioned single page:
+
+**Practice Details:**
+- Clinic name: "Pulse & Function" (editable)
+- Address: "52 Queen Anne Street, SameDay Doctor, London, W1G 8HL"
+- Email: "hello@pulseandfunction.com"
+- Doctor name: "Dr Sarah Al-Temimi"
+- Credentials: "MBBS BSc MSc(SEM) DipNutr(CNM) AFMCP"
+
+**Appointment Configuration:**
+- Table of appointment types with editable: Name, Duration, Price
+- Pre-filled: New Patient (60 min, £220), Follow-Up (45 min, £195), Discovery Call (15 min, Free)
+
+**Quick-Reply Templates:**
+- List of saved templates with edit/delete
+- "Add Template" button
+- Each template: Title (for admin reference) + Body (the actual message text)
+- Pre-load with:
+  - "Food Diary Reminder" → "Hi [name], just a gentle reminder to complete your 7-day food diary before our next appointment. You can fill it in directly in your portal. Let me know if you have any questions!"
+  - "Lab Results Ready" → "Hi [name], your lab results are now available in your portal under Documents. We'll discuss them in detail at your next consultation."
+  - "Supplement Guidance" → "Hi [name], I've updated your supplement recommendations in your portal. You can view the details and purchase links under the Supplements section."
+
+**Integrations Status:**
+- Stripe: "Not connected" (placeholder — will show connection status later)
+- Cal.com: "Not connected" (placeholder)
+- Resend: "Not connected" (placeholder)
+- Each with a "Configure" button (disabled for now)
+
+---
+
+## BUILD ORDER
+
+Build these screens in this order:
+1. Intake Form — straightforward form, good warm-up
+2. Food Diary — the most complex UI component, get it right
+3. Documents — file display and upload UI
+4. Messages (both patient + admin views) — most impactful feature
+5. Supplements (both patient + admin catalogue)
+6. Account page
+7. Admin Patient Detail (the big one — pulls everything together)
+8. Admin Settings
+
+For each screen: build the complete UI with mock data, proper loading skeletons, empty states, and mobile responsiveness. Follow the Pulse & Function design system (forest green, warm cream, terracotta accents, pill buttons, warm borders).
+
+## AFTER ALL SCREENS ARE BUILT — STOP
+
+Do not attempt to wire up Supabase queries, Stripe, Cal.com, or email. We will export to Cursor/Claude Code for all integration work. Focus purely on beautiful, complete, responsive UI for every screen.

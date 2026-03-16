@@ -77,7 +77,19 @@ Key directories:
 
 Supabase DB tables expected: `profiles`, `appointments`, `memberships`, `intake_forms`, `food_diaries`, `food_diary_entries`, `conversations`, `messages`, `documents`, `supplement_catalogue`, `patient_supplements`
 
-Phase 2/3 features (messaging, food diary, documents, supplements, intake forms) are placeholder pages with "coming soon" UI.
+Phase 2 screens are fully built with mock/placeholder data:
+- **Intake Form** (`/intake`) — Multi-section form with progress tracking, required field validation, auto-save indicators, consent checkboxes
+- **Food Diary** (`/food-diary`) — 7-day tabbed food diary with meal slots, no-snack toggles, drinks/symptoms fields, day completion tracking
+- **Documents** (`/documents`) — Document list with filter pills, upload dialog with drag-and-drop, type/provider badges, mock documents
+- **Messages** (`/messages`) — Member state (full thread UI with bubbles, timestamps, read receipts, file attachments) and non-member upsell state
+- **Supplements** (`/supplements`) — Grid of supplement cards with brand, dosage, purchase links, Deeply discount badge
+- **Account** (`/account`) — Profile editing, membership display (member/non-member), billing history, notification toggles, danger zone
+- **Admin Patient Detail** (`/admin/patients/[id]`) — 7-tab view: Overview, Appointments, Documents, Messages, Supplements, Notes, Forms with mock data
+- **Admin Messages** (`/admin/messages`) — Two-panel layout (thread list + conversation), filter pills, quick-reply templates, status selectors
+- **Admin Supplements** (`/admin/supplements`) — Product catalogue with add/edit modals, active/inactive toggles, mock catalogue data
+- **Admin Settings** (`/admin/settings`) — Practice details, appointment config table, quick-reply templates, integration status cards
+
+All screens use mock data. Supabase wiring, Stripe, Cal.com, and email integration are deferred to Phase 3.
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 

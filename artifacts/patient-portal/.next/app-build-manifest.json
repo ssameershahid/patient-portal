@@ -6,55 +6,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(patient)/layout": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/layout.js"
+      "static/chunks/app/page.js"
     ],
-    "/(patient)/dashboard/page": [
+    "/(auth)/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/dashboard/page.js"
-    ],
-    "/(patient)/appointments/book/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/appointments/book/page.js"
-    ],
-    "/(patient)/appointments/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/appointments/page.js"
-    ],
-    "/(patient)/messages/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/messages/page.js"
-    ],
-    "/(patient)/account/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/account/page.js"
-    ],
-    "/(patient)/intake/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/intake/page.js"
-    ],
-    "/(patient)/documents/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/documents/page.js"
-    ],
-    "/(patient)/food-diary/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/food-diary/page.js"
-    ],
-    "/(patient)/supplements/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(patient)/supplements/page.js"
+      "static/chunks/app/(auth)/login/page.js"
     ]
   }
 }
