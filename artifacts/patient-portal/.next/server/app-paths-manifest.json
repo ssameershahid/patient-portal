@@ -2,5 +2,8 @@
   "/page": "app/page.js",
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(patient)/dashboard/page": "app/(patient)/dashboard/page.js",
-  "/(patient)/messages/page": "app/(patient)/messages/page.js"
+  "/(patient)/messages/page": "app/(patient)/messages/page.js",
+  "/(patient)/account/page": "app/(patient)/account/page.js",
+  "/(patient)/food-diary/page": "app/(patient)/food-diary/page.js",
+  "/(patient)/supplements/page": "app/(patient)/supplements/page.js"
 }

@@ -30,6 +30,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(patient)/messages/page.js"
+    ],
+    "/(patient)/account/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(patient)/account/page.js"
+    ],
+    "/(patient)/food-diary/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(patient)/food-diary/page.js"
+    ],
+    "/(patient)/supplements/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(patient)/supplements/page.js"
     ]
   }
 }
