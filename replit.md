@@ -21,7 +21,8 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ```text
 artifacts-monorepo/
 ├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
+│   ├── api-server/         # Express API server
+│   └── patient-portal/     # Next.js 15 Patient Portal (Pulse & Function)
 ├── lib/                    # Shared libraries
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
@@ -49,6 +50,34 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 - `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
 
 ## Packages
+
+### `artifacts/patient-portal` (`@workspace/patient-portal`)
+
+**Pulse & Function Patient Portal** — Next.js 15 App Router application for Dr Sarah Al-Temimi's functional medicine clinic.
+
+- **Framework**: Next.js 15, React, Tailwind CSS v3, Radix UI
+- **Auth & Data**: Supabase (auth + PostgreSQL database via @supabase/ssr)
+- **Port**: 24832 (assigned by artifact system)
+- **Preview Path**: `/` (root)
+- **Design**: Forest green / warm earth / cream palette. DM Sans headings + Inter body.
+- **Supabase Secrets**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+
+Key directories:
+- `app/(auth)/` — Login, register, verify, forgot/reset password pages
+- `app/(patient)/` — Patient dashboard, appointments (list + multi-step booking), messages, documents, food diary, supplements, account, intake
+- `app/(admin)/admin/` — Admin dashboard, patient list, patient detail, calendar, messages, supplements, settings
+- `components/ui/` — Radix-based UI components (Button, Card, Input, Label, Textarea, Badge, Tabs, Select, Dialog, etc.)
+- `components/layout/` — Sidebar, MobileNav, AdminSidebar
+- `components/appointments/` — CancelButton
+- `lib/supabase/` — Client, server, and type definitions
+- `lib/utils/` — Constants (appointment types, membership tiers, clinic info), helpers (date formatting)
+- `lib/stripe/` — Placeholder for Stripe integration (TODO)
+- `lib/email/` — Placeholder for Resend email integration (TODO)
+- `middleware.ts` — Auth routing (redirects, role-based access)
+
+Supabase DB tables expected: `profiles`, `appointments`, `memberships`, `intake_forms`, `food_diaries`, `food_diary_entries`, `conversations`, `messages`, `documents`, `supplement_catalogue`, `patient_supplements`
+
+Phase 2/3 features (messaging, food diary, documents, supplements, intake forms) are placeholder pages with "coming soon" UI.
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 
