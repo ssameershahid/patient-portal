@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +13,7 @@ import { MEMBERSHIP_TIERS } from '@/lib/utils/constants'
 import type { MembershipTierKey } from '@/lib/utils/constants'
 import {
   Crown, Check, User, Bell, CreditCard, AlertTriangle,
-  Download, Trash2
+  Download, Trash2, Camera, X
 } from 'lucide-react'
 
 const IS_MEMBER = false
@@ -23,6 +24,9 @@ const MOCK_BILLING = [
   { id: '3', date: '2026-02-01', description: 'Lab Tests — Blood Panel (TDL)', amount: '£385.00', status: 'Paid' },
 ]
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
 export default function AccountPage() {
   const [fullName, setFullName] = useState('Test Patient')
   const [email] = useState('test@pulseandfunction.com')
@@ -31,6 +35,11 @@ export default function AccountPage() {
   const [dob, setDob] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [notifications, setNotifications] = useState({
     appointments: true,
@@ -43,6 +52,42 @@ export default function AccountPage() {
   function handleSave() {
     setSaving(true)
     setTimeout(() => setSaving(false), 1000)
+  }
+
+  function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setAvatarError(null)
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setAvatarError('Please upload a JPG, PNG, or WebP image.')
+      return
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setAvatarError('Image must be smaller than 5MB.')
+      return
+    }
+
+    setAvatarUploading(true)
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setAvatarPreview(ev.target?.result as string)
+      setAvatarUploading(false)
+    }
+    reader.onerror = () => {
+      setAvatarError('Failed to read file. Please try again.')
+      setAvatarUploading(false)
+    }
+    reader.readAsDataURL(file)
+
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function handleRemoveAvatar() {
+    setAvatarPreview(null)
+    setAvatarError(null)
   }
 
   return (
@@ -59,12 +104,73 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 text-lg font-bold">
-                TP
+              <div className="relative group">
+                {avatarPreview ? (
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-forest-200">
+                    <Image
+                      src={avatarPreview}
+                      alt="Profile photo"
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                    <button
+                      onClick={handleRemoveAvatar}
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
+                      aria-label="Remove profile photo"
+                    >
+                      <X className="h-5 w-5 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-20 h-20 rounded-full bg-forest-100 flex items-center justify-center text-forest-700 text-xl font-bold hover:bg-forest-200 transition-colors cursor-pointer relative group"
+                    aria-label="Upload profile photo"
+                  >
+                    <span className="group-hover:opacity-0 transition-opacity">TP</span>
+                    <Camera className="h-6 w-6 absolute opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                )}
+                {avatarUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-full">
+                    <div className="h-5 w-5 border-2 border-forest-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
               </div>
               <div>
-                <Button variant="secondary" size="sm">Change Photo</Button>
-                <p className="text-xs text-cream-600 mt-1">JPG, PNG. Max 5MB.</p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarSelect}
+                  className="hidden"
+                  aria-label="Upload profile photo"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarPreview ? 'Change Photo' : 'Upload Photo'}
+                  </Button>
+                  {avatarPreview && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveAvatar}
+                      className="text-error hover:text-error"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-cream-600 mt-1">JPG, PNG, or WebP. Max 5MB.</p>
+                {avatarError && (
+                  <p className="text-xs text-error mt-1">{avatarError}</p>
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
