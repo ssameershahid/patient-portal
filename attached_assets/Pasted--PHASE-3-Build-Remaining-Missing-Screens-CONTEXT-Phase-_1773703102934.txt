@@ -1,0 +1,246 @@
+# PHASE 3 — Build Remaining Missing Screens
+
+## CONTEXT
+Phase 1 and 2 UI screens are built. We have: auth pages, patient dashboard, admin dashboard, appointment booking flow, patient sidebar + admin sidebar layouts, admin patient list, intake form, food diary, documents, messages (both patient + admin), supplements (both patient + admin catalogue), account page, admin patient detail, and admin settings.
+
+We're missing 4 screens. Build them now, same approach — beautiful UI with mock data, following the Pulse & Function design system. No Supabase wiring needed, just complete UI.
+
+**DESIGN SYSTEM REMINDER:** Forest green (#2C3E2D) primary, warm cream (#F5EDE3) page backgrounds, terracotta (#C4884D) accents, pill-shaped buttons (rounded-full), DM Sans headings, Inter body, warm card borders (#E8E2D8). NOT blue, NOT cold gray, NOT default shadcn colours.
+
+---
+
+## SCREEN 1: Discovery Call Booking (/discovery)
+
+This is a PUBLIC page — no login required. It's for prospective patients who aren't sure if Pulse & Function is right for them and want a free 15-minute introductory call with Dr Sarah before committing to a paid consultation.
+
+### Layout:
+
+**Header:** Simple top bar with the Pulse & Function logo (links to pulseandfunction.com) and a "Already a patient? Log in →" link on the right.
+
+**Hero Section (left side on desktop, stacked on mobile):**
+- Headline: "Not sure if functional medicine is right for you?"
+- Subtext: "Book a free 15-minute discovery call with Dr Sarah. No commitment, no pressure — just an honest conversation about your health goals and whether Pulse & Function can help."
+- Three trust points with small green checkmark icons:
+  - "GMC-registered medical doctor"
+  - "Specialist in nutritional medicine"
+  - "30 years of clinical experience"
+- Small text: "Or if you're ready to book: Book a consultation →" (links to /register)
+
+**Booking Section (right side on desktop, below on mobile):**
+- Card with heading: "Book your free discovery call"
+- Simple form fields (NOT a full registration — lightweight):
+  - Full name (text input)
+  - Email address (text input)
+  - Phone number (text input, optional)
+- Below the form: a date/time picker UI (placeholder — this will be replaced with Cal.com embed later). Show a simple weekly calendar with 15-minute slots available Mon-Fri.
+- "Book Call" button (forest green, pill-shaped)
+
+**Confirmation State (shown after booking):**
+- Replace the form with a success card:
+  - Green checkmark icon
+  - "You're booked!"
+  - "Dr Sarah will call you on [date] at [time]"
+  - "You'll receive a confirmation email with a calendar invite shortly."
+  - "In the meantime, learn more about how Pulse & Function works →" (links to pulseandfunction.com/how-it-works)
+
+**Footer:** Minimal — clinic address, email, links to Privacy Policy (https://pulseandfunction.webflow.io/privacy-policy) and Terms & Conditions (/terms).
+
+### Mobile:
+- Everything stacks vertically: hero text first, then booking card below.
+- Full-width form fields and button.
+
+---
+
+## SCREEN 2: Membership Comparison (/membership or /pricing)
+
+This page lives inside the portal (authenticated) and is shown when a patient selects "Explore Membership Plans" during onboarding, or navigates from the account page "Upgrade to Membership" CTA, or clicks any membership upsell prompt throughout the portal.
+
+### Layout:
+
+**Page Header:**
+- Title: "Membership Plans"
+- Subtitle: "Ongoing support for your health journey. Choose the plan that fits your needs."
+
+**Tier Comparison — Two Cards Side by Side (desktop), Stacked (mobile):**
+
+**Card 1 — Essential (Tier 1):**
+- Badge at top: "Essential"
+- Price: "£420" large + "/month" smaller
+- Subtext: "3-month minimum commitment"
+- Divider line
+- Features list with green checkmark icons:
+  - "2 consultations per month"
+  - "Direct messaging with Dr Sarah"
+  - "Priority booking"
+  - "Access to patient portal"
+  - "Digital food diary & intake forms"
+  - "Lab results in your portal"
+  - "Personalised supplement recommendations"
+- CTA button: "Choose Essential" (forest green outline button)
+
+**Card 2 — Premium (Tier 2):**
+- Badge at top: "Premium" — with a small "Most popular" terracotta accent badge
+- Price: "£810" large + "/month" smaller
+- Subtext: "3-month minimum commitment"
+- Divider line
+- Features list with green checkmark icons:
+  - "4 consultations per month (weekly)"
+  - "Direct messaging with Dr Sarah"
+  - "Priority booking"
+  - "Access to patient portal"
+  - "Digital food diary & intake forms"
+  - "Lab results in your portal"
+  - "Personalised supplement recommendations"
+  - "Extended consultation time"
+- CTA button: "Choose Premium" (solid forest green button — visually emphasised over Essential)
+- This card should have a subtle highlight: slightly elevated with a 2px forest green border at top, or a soft shadow to distinguish it as the recommended option
+
+**Below the Cards — One-Off Option:**
+- Light card or text block: "Not ready for a membership? You can also book a single consultation."
+  - "New Patient Consultation — £220 (60 min)"
+  - "Follow-Up Consultation — £195 (30-45 min)"
+  - CTA: "Book a Single Consultation →" (links to /appointments/book)
+
+**FAQ Section at Bottom:**
+- Accordion/expandable questions:
+  - "What's included in the 3-month minimum?" → "Your membership runs for a minimum of 3 months. After the initial 3-month period, you can cancel at any time with 30 days' notice. Unused consultation credits do not roll over between months."
+  - "Can I switch between tiers?" → "Yes, you can upgrade or downgrade your membership tier at any time. Changes take effect at the start of your next billing period."
+  - "What if I need more consultations than my plan includes?" → "You can book additional consultations at the standard follow-up rate of £195 per session."
+  - "How does messaging work?" → "Both membership tiers include direct messaging with Dr Sarah through the patient portal. Messages are typically responded to within 24-48 hours during business hours. Messaging is not for medical emergencies."
+  - "Can I cancel within the first 3 months?" → "The 3-month minimum commitment applies to all memberships. If you need to cancel within this period, your membership will remain active until the end of the 3-month term."
+
+### On CTA Click:
+- "Choose Essential" or "Choose Premium" should navigate to a placeholder checkout route like /membership/checkout?tier=tier_1 or /membership/checkout?tier=tier_2. We'll wire Stripe later.
+
+---
+
+## SCREEN 3: Terms & Conditions (/terms)
+
+A content page displaying Dr Sarah's terms and conditions. Render it as a clean, well-formatted document page.
+
+### Layout:
+- Clean reading layout — centered content column, max-width 720px
+- Page title: "Terms & Conditions"
+- Last updated date: "Last updated: March 2026"
+- Back link at top: "← Back" (goes to previous page or /dashboard)
+- Content rendered with proper heading hierarchy, spacing, and readability
+- Link to Privacy Policy at bottom: "View our Privacy Policy →" (links to https://pulseandfunction.webflow.io/privacy-policy — external link, opens in new tab)
+
+### Content (render this exactly):
+
+**Important Notice**
+
+Dr Sarah Al-Temimi is a GP and nutritionist. If you suspect you may have an ailment or illness that may require medical attention, it is your responsibility to consult with your regular GP. Dr Sarah Al-Temimi is not acting in place of your regular GP/consultant and will not be prescribing medication or taking on the role of your regular doctor during the nutritional consultations.
+
+Dr Sarah Al-Temimi focuses on wellness and prevention of illness. As a certified clinical nutritionist and functional medicine specialist, Dr Sarah Al-Temimi can organise functional medical testing and also educate and motivate clients to assume more personal responsibility for their health by adopting a healthy attitude, lifestyle, and diet.
+
+Dr Sarah Al-Temimi does not promise or guarantee protection from future illness.
+
+Dr Sarah Al-Temimi will not be held liable for failure to diagnose or treat an illness, nor will she be liable for failure to prevent future illness.
+
+Any consultation notes and test results are held securely and confidentially.
+
+By using this service, you confirm that you have given Dr Sarah Al-Temimi a complete and accurate account of any medical conditions that you may have and any medications that you are taking.
+
+**Booking & Payment Terms**
+
+The following terms and conditions apply for all bookings:
+
+- All package bookings must be paid for in advance, in full or in 2-3 instalments.
+- All single appointments — initial or follow-ups — must be paid in advance.
+- All tests must be paid for in advance.
+
+**Cancellations — In-Person Appointments (52 Queen Anne Street)**
+
+- Please notify all cancellations by email (hello@pulseandfunction.com) or through the patient portal messaging as soon as possible.
+- Any cancellation or rescheduling of an in-person appointment less than 2 hours prior to the appointment time will incur a 50% charge of the appointment fee. Refunds will be issued within 5 working days.
+- An in-person appointment can be rescheduled with no charge only if more than two hours before the original appointment time.
+- A non-attendance to a booked in-person appointment will not be refunded.
+
+**Cancellations — Video/Phone Appointments**
+
+- Please notify all cancellations by email (hello@pulseandfunction.com) or through the patient portal messaging as soon as possible.
+- There are no cancellation fees for cancelling a video/phone appointment at any time. A full refund will be issued within 5 working days.
+- A non-attendance to a booked video/phone appointment will not be refunded.
+
+**Cancellations — Membership Plans**
+
+- Membership plans have a 3-month minimum commitment period.
+- After the initial 3-month period, memberships can be cancelled with 30 days' notice.
+- Cancellation within the 3-month minimum period: the membership will remain active until the end of the 3-month term.
+- Unused consultation credits do not roll over between billing periods.
+- Dr Sarah Al-Temimi has the right to terminate a membership at her sole discretion. Any prepaid services not yet delivered will be refunded.
+
+**Refund of Payment for Tests**
+
+Tests are not refundable under any circumstances.
+
+---
+
+## SCREEN 4: Admin Broadcast/Notification Centre (/admin/notifications)
+
+Where Dr Sarah can send notifications or announcements to patients.
+
+### Layout:
+
+**Page Header:**
+- Title: "Notifications & Broadcasts"
+- Subtitle: "Send announcements to your patients."
+
+**Compose Section (top):**
+A card with the compose form:
+- "Send to" — radio button group:
+  - "All patients"
+  - "Members only"
+  - "Specific patient" (shows a patient search/select dropdown when chosen)
+- "Subject" — text input (e.g., "Clinic closure notice")
+- "Message" — textarea, 4-5 rows (e.g., "Please note the clinic will be closed on Good Friday, 18 April 2026. If you have an appointment on this date, you will be contacted to reschedule.")
+- "Delivery method" — checkbox group:
+  - ☑ "Portal notification" (always checked, default)
+  - ☐ "Email notification"
+- "Send" button (forest green, pill-shaped)
+- Preview section: "Preview" button that shows how the notification will appear to patients
+
+**Sent History (below):**
+- Table/list of previously sent notifications:
+  - Date sent
+  - Subject
+  - Audience (All / Members / Patient name)
+  - Delivery method (Portal / Email / Both)
+  - Status (Sent / Failed)
+- Click to expand and see the full message text
+
+**Empty State:**
+"No notifications sent yet. Use the form above to send announcements to your patients about clinic updates, closures, or important health information."
+
+### Add to Admin Sidebar:
+- Add a "Notifications" nav item to the admin sidebar, between "Messages" and "Supplements" (or wherever it fits logically). Use a bell icon (from Lucide icons).
+
+### Add to Patient Dashboard:
+- If there are unread notifications for the patient, show a notification banner at the top of the patient dashboard:
+  - Light cream card with a small bell icon and the notification subject
+  - "Dr Sarah posted: [subject]" with the date
+  - Expandable to show full message text
+  - Dismiss/close button (marks as read)
+- Also add a small notification dot indicator on the patient sidebar near the dashboard nav item or a dedicated notifications area
+
+### Mock Data for Sent History:
+```
+[
+  { date: "14 Mar 2026", subject: "Easter clinic hours", audience: "All patients", method: "Portal + Email", status: "Sent", message: "Please note the clinic will be closed on Good Friday (18 April) and Easter Monday (21 April). Normal hours resume Tuesday 22 April. If you have an appointment on these dates, we will contact you to reschedule." },
+  { date: "1 Mar 2026", subject: "New supplement range available", audience: "Members only", method: "Portal", status: "Sent", message: "I'm pleased to share that I've added Bare Biology and Ancient and Brave supplements to my recommendations. Check your Supplements page for personalised suggestions." },
+]
+```
+
+---
+
+## BUILD ORDER
+
+1. Discovery Call page — simple public page
+2. Membership Comparison — important for conversion flow
+3. Terms & Conditions — static content page
+4. Admin Notifications + patient notification banner
+
+## AFTER THESE 4 SCREENS ARE BUILT — STOP
+
+The entire UI shell will be complete. Do not attempt to wire up Supabase, Stripe, Cal.com, or any backend integrations.

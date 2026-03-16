@@ -89,7 +89,18 @@ Phase 2 screens are fully built with mock/placeholder data:
 - **Admin Supplements** (`/admin/supplements`) — Product catalogue with add/edit modals, active/inactive toggles, mock catalogue data
 - **Admin Settings** (`/admin/settings`) — Practice details, appointment config table, quick-reply templates, integration status cards
 
-All screens use mock data. Supabase wiring, Stripe, Cal.com, and email integration are deferred to Phase 3.
+Phase 3 screens built:
+- **Discovery Call** (`/discovery`) — PUBLIC page, no login required. Hero section with trust points, booking form with weekly calendar date/time picker, confirmation state
+- **Membership Plans** (`/membership`) — Authenticated. Side-by-side tier comparison (Essential £420/mo vs Premium £810/mo), single consultation fallback, FAQ accordion
+- **Terms & Conditions** (`/terms`) — PUBLIC page. Clean reading layout with full T&Cs content, back navigation, privacy policy link
+- **Admin Notifications** (`/admin/notifications`) — Compose form with audience selector (all/members/specific), subject, message, delivery method checkboxes, preview, sent history with expand
+
+Supporting additions:
+- **Notification banner** on patient dashboard — dismissible alert showing latest clinic announcement from Dr Sarah
+- **Admin sidebar** — added Notifications nav item with bell icon between Messages and Supplements
+- **Middleware** — `/membership` added as protected route; `/discovery` and `/terms` are public
+
+All screens use mock data. Supabase wiring, Stripe, Cal.com, and email integration are deferred.
 
 ### `artifacts/api-server` (`@workspace/api-server`)
 

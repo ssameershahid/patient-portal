@@ -8,6 +8,7 @@ import { formatDate, formatTime } from '@/lib/utils/helpers'
 import Link from 'next/link'
 import { Calendar, ClipboardList, MessageSquare, FileText, Crown } from 'lucide-react'
 import type { AppointmentTypeKey, MembershipTierKey } from '@/lib/utils/constants'
+import NotificationBanner from '@/components/notifications/NotificationBanner'
 
 export default async function PatientDashboard() {
   const supabase = await createClient()
@@ -72,6 +73,8 @@ export default async function PatientDashboard() {
   return (
     <div>
       <h1 className="text-2xl font-bold font-heading mb-6">Dashboard</h1>
+
+      <NotificationBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Next Appointment */}

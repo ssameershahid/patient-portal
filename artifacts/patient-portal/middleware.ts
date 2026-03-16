@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
   const isAuthPage = path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/forgot-password') || path.startsWith('/reset-password') || path.startsWith('/verify')
-  const isProtected = path.startsWith('/dashboard') || path.startsWith('/admin') || path.startsWith('/appointments') || path.startsWith('/messages') || path.startsWith('/documents') || path.startsWith('/food-diary') || path.startsWith('/supplements') || path.startsWith('/account') || path.startsWith('/intake')
+  const isProtected = path.startsWith('/dashboard') || path.startsWith('/admin') || path.startsWith('/appointments') || path.startsWith('/messages') || path.startsWith('/documents') || path.startsWith('/food-diary') || path.startsWith('/supplements') || path.startsWith('/account') || path.startsWith('/intake') || path.startsWith('/membership')
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL('/login', request.url))

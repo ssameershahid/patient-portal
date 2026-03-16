@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { CLINIC_INFO } from '@/lib/utils/constants'
 import {
-  LayoutDashboard, Users, Calendar, MessageSquare, Pill, Settings, LogOut
+  LayoutDashboard, Users, Calendar, MessageSquare, Bell, Pill, Settings, LogOut
 } from 'lucide-react'
 
 const adminNavItems = [
@@ -15,6 +15,7 @@ const adminNavItems = [
   { href: '/admin/patients', label: 'Patients', icon: Users },
   { href: '/admin/calendar', label: 'Calendar', icon: Calendar },
   { href: '/admin/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/admin/notifications', label: 'Notifications', icon: Bell },
   { href: '/admin/supplements', label: 'Supplements', icon: Pill },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
