@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Users } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function AdminPatientsPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: profiles } = await supabase
     .from('profiles')

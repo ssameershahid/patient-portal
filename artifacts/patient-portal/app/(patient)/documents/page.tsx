@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { FileText } from 'lucide-react'
@@ -9,7 +10,8 @@ export default async function DocumentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: documents } = await supabase
+  const admin = createAdminClient()
+  const { data: documents } = await admin
     .from('documents')
     .select('*')
     .eq('patient_id', user.id)

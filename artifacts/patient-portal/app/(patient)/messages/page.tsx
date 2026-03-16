@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Lock } from 'lucide-react'
@@ -9,7 +10,8 @@ export default async function MessagesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: membership } = await supabase
+  const admin = createAdminClient()
+  const { data: membership } = await admin
     .from('memberships')
     .select('id')
     .eq('user_id', user.id)

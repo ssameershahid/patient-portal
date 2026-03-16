@@ -1,5 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -33,19 +42,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isAuthPage) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const dest = profile?.role === 'admin' ? '/admin' : '/dashboard'
-    return NextResponse.redirect(new URL(dest, request.url))
-  }
-
-  if (user && path === '/') {
-    const { data: profile } = await supabase
+  if (user && (isAuthPage || path === '/')) {
+    const admin = getAdminClient()
+    const { data: profile } = await admin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -56,7 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && path.startsWith('/admin')) {
-    const { data: profile } = await supabase
+    const admin = getAdminClient()
+    const { data: profile } = await admin
       .from('profiles')
       .select('role')
       .eq('id', user.id)

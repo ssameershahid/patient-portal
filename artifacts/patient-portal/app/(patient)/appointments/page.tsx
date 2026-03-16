@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,16 +16,17 @@ export default async function AppointmentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  const admin = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
   const [upcomingRes, pastRes] = await Promise.all([
-    supabase
+    admin
       .from('appointments')
       .select('*')
       .eq('patient_id', user.id)
       .gte('date', today)
       .order('date', { ascending: true }),
-    supabase
+    admin
       .from('appointments')
       .select('*')
       .eq('patient_id', user.id)

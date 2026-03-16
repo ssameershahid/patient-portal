@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Pill } from 'lucide-react'
@@ -8,7 +9,8 @@ export default async function SupplementsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data: supplements } = await supabase
+  const admin = createAdminClient()
+  const { data: supplements } = await admin
     .from('patient_supplements')
     .select('*, supplement_catalogue(*)')
     .eq('patient_id', user.id)

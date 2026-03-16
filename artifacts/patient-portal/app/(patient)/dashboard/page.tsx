@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,10 +15,11 @@ export default async function PatientDashboard() {
 
   if (!user) return null
 
+  const admin = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
   const [appointmentRes, intakeRes, diaryRes, membershipRes, documentsRes, conversationRes] = await Promise.all([
-    supabase
+    admin
       .from('appointments')
       .select('*')
       .eq('patient_id', user.id)
@@ -25,30 +27,30 @@ export default async function PatientDashboard() {
       .eq('status', 'confirmed')
       .order('date', { ascending: true })
       .limit(1),
-    supabase
+    admin
       .from('intake_forms')
       .select('id')
       .eq('patient_id', user.id)
       .limit(1),
-    supabase
+    admin
       .from('food_diaries')
       .select('id')
       .eq('patient_id', user.id)
       .eq('status', 'in_progress')
       .limit(1),
-    supabase
+    admin
       .from('memberships')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .limit(1),
-    supabase
+    admin
       .from('documents')
       .select('*')
       .eq('patient_id', user.id)
       .order('created_at', { ascending: false })
       .limit(3),
-    supabase
+    admin
       .from('conversations')
       .select('id, last_message_at, unread_count_patient')
       .eq('patient_id', user.id)

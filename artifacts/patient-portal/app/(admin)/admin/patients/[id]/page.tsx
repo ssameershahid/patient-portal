@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -13,7 +13,7 @@ import type { AppointmentTypeKey, MembershipTierKey } from '@/lib/utils/constant
 
 export default async function AdminPatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [profileRes, appointmentsRes, membershipRes, documentsRes, supplementsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),

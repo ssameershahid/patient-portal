@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { APPOINTMENT_TYPES } from '@/lib/utils/constants'
@@ -7,7 +7,7 @@ import { Calendar, MessageSquare, Users, TrendingUp } from 'lucide-react'
 import type { AppointmentTypeKey } from '@/lib/utils/constants'
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const today = new Date().toISOString().split('T')[0]
   const weekStart = new Date()
