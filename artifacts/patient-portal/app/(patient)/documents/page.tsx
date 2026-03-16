@@ -189,7 +189,7 @@ export default function DocumentsPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-cream-600">
-                    <span>{formatDate(doc.created_at)}</span>
+                    <span suppressHydrationWarning>{formatDate(doc.created_at)}</span>
                     <span>{formatFileSize(doc.file_size)}</span>
                     <span>Uploaded by {doc.uploaded_by === 'admin' ? 'Dr Sarah' : 'You'}</span>
                   </div>

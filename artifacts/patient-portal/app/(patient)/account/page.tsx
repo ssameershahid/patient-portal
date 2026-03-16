@@ -192,7 +192,7 @@ export default function AccountPage() {
                   <tbody>
                     {MOCK_BILLING.map((item) => (
                       <tr key={item.id} className="border-b border-cream-200">
-                        <td className="py-3 text-cream-800">{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td className="py-3 text-cream-800" suppressHydrationWarning>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                         <td className="py-3 text-cream-900 font-medium">{item.description}</td>
                         <td className="py-3 text-cream-900">{item.amount}</td>
                         <td className="py-3">

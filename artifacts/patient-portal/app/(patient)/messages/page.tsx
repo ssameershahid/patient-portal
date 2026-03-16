@@ -56,18 +56,8 @@ const MOCK_MESSAGES = [
   },
 ]
 
-function formatRelativeTime(dateStr: string) {
-  const now = new Date()
+function formatMessageTime(dateStr: string) {
   const date = new Date(dateStr)
-  const diffMs = now.getTime() - date.getTime()
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffHours < 1) return 'Just now'
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-  if (diffDays === 1) {
-    return `Yesterday at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
-  }
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
@@ -162,7 +152,7 @@ export default function MessagesPage() {
                     )}
                   </div>
                   <div className={`flex items-center gap-1 mt-1 ${isPatient ? 'justify-end' : 'justify-start'}`}>
-                    <span className="text-[10px] text-cream-600">{formatRelativeTime(msg.created_at)}</span>
+                    <span className="text-[10px] text-cream-600" suppressHydrationWarning>{formatMessageTime(msg.created_at)}</span>
                     {isPatient && msg.read_at && (
                       <CheckCheck className="h-3 w-3 text-forest-500" />
                     )}

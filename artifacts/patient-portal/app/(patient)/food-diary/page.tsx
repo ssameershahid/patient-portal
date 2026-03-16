@@ -174,7 +174,7 @@ export default function FoodDiaryPage() {
       </div>
 
       <div className="flex items-center justify-between mb-6">
-        <p className="text-xs text-cream-600">{formatDayLabel(activeDay)}</p>
+        <p className="text-xs text-cream-600" suppressHydrationWarning>{formatDayLabel(activeDay)}</p>
         <Badge variant={completedCount === 7 ? 'success' : 'outline'}>
           {completedCount} of 7 days completed
         </Badge>

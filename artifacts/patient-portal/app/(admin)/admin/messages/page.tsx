@@ -242,9 +242,9 @@ export default function AdminMessagesPage() {
                     }`}>
                       {msg.body}
                     </div>
-                    <div className={`flex items-center gap-1 mt-1 text-[10px] text-cream-600 ${isAdmin ? 'justify-end' : ''}`}>
+                    <div className={`flex items-center gap-1 mt-1 text-[10px] text-cream-600 ${isAdmin ? 'justify-end' : ''}`} suppressHydrationWarning>
                       <Clock className="h-2.5 w-2.5" />
-                      {new Date(msg.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      <span suppressHydrationWarning>{new Date(msg.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                       {isAdmin && msg.read_at && <CheckCheck className="h-3 w-3 text-forest-500 ml-1" />}
                     </div>
                   </div>
