@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { register } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -10,21 +10,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CLINIC_INFO } from '@/lib/utils/constants'
 
 export default function RegisterPage() {
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [consentTerms, setConsentTerms] = useState(false)
   const [consentData, setConsentData] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [successEmail, setSuccessEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
-  async function handleRegister(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(formData: FormData) {
     setError('')
+
+    const password = formData.get('password') as string
+    const confirmPassword = formData.get('confirmPassword') as string
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -38,23 +35,15 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone,
-        },
-      },
-    })
+    const result = await register(formData)
 
-    if (error) {
-      setError(error.message)
+    if (result?.error) {
+      setError(result.error)
       setLoading(false)
       return
     }
 
+    setSuccessEmail(formData.get('email') as string)
     setSuccess(true)
     setLoading(false)
   }
@@ -75,7 +64,7 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-xl font-semibold font-heading mb-2">Check your email</h2>
               <p className="text-cream-700 text-sm">
-                We&apos;ve sent a verification link to <strong>{email}</strong>. Please click the link to verify your account.
+                We&apos;ve sent a verification link to <strong>{successEmail}</strong>. Please click the link to verify your account.
               </p>
               <Link href="/login" className="inline-block mt-6">
                 <Button variant="secondary">Back to Sign In</Button>
@@ -101,7 +90,7 @@ export default function RegisterPage() {
             <CardDescription>Join to manage your consultations and health journey</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleRegister} className="space-y-4">
+            <form action={handleSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">
                   {error}
@@ -110,27 +99,27 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" placeholder="Dr Jane Smith" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                <Input id="fullName" name="fullName" placeholder="Dr Jane Smith" required />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email" name="email" type="email" placeholder="you@example.com" required />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" type="tel" placeholder="+44 7XXX XXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                <Input id="phone" name="phone" type="tel" placeholder="+44 7XXX XXXXXX" required />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+                <Input id="password" name="password" type="password" placeholder="••••••••" required minLength={8} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" required />
               </div>
 
               <div className="space-y-3 pt-2">
