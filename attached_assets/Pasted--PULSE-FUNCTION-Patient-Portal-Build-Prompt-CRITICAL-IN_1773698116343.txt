@@ -1,0 +1,505 @@
+# PULSE & FUNCTION — Patient Portal: Build Prompt
+
+## ⚠️ CRITICAL INSTRUCTIONS — READ BEFORE DOING ANYTHING
+
+**DO NOT use Replit's built-in database, Replit DB, Replit Auth, or Replit's Neon Postgres. DO NOT install `@replit/database` or any Replit-specific database package.**
+
+This project uses **Supabase** as the EXTERNAL backend for database, authentication, file storage, and real-time messaging. The Supabase project is already created and running. Its credentials are stored in Replit Secrets:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+**Stripe is NOT configured yet** — the client hasn't provided access. Build the payment flows with clear placeholder/mock functions that we'll wire up to real Stripe later. Create the Stripe helper files with TODO comments.
+
+---
+
+## WHAT WE'RE BUILDING
+
+A **patient portal web application** for **Pulse & Function**, a premium functional medicine clinic in London run by Dr Sarah Al-Temimi (GMC-registered medical doctor specialising in nutritional medicine).
+
+**URL:** `app.pulseandfunction.com` (subdomain of the existing Webflow marketing site at `pulseandfunction.com`)
+
+**Two user types:**
+1. **Patients** — register, book appointments, complete intake forms & food diaries, view lab results, message Dr Sarah (members only), view supplement recommendations
+2. **Admin (Dr Sarah)** — manage patients, view appointments, reply to messages, upload lab results, manage supplement recommendations, practice settings
+
+**Business model:**
+- One-off consultations: New Patient £220 (60 min), Follow-Up £195 (30-45 min)
+- Free Discovery Call: £0 (15 min)
+- Membership Tier 1: £420/month — 2 consultations/month + messaging (3-month minimum)
+- Membership Tier 2: £810/month — 4 consultations/month + messaging (3-month minimum)
+- Members get in-app messaging. Non-members do NOT.
+
+---
+
+## TECH STACK — MANDATORY, DO NOT CHANGE
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 with App Router (`/app` directory), TypeScript |
+| Styling | Tailwind CSS + shadcn/ui |
+| Database | Supabase PostgreSQL (EXTERNAL — already set up on supabase.com) |
+| Auth | Supabase Auth (email/password + magic link) |
+| File Storage | Supabase Storage (already configured with buckets) |
+| Real-time | Supabase Realtime (for messaging — build later) |
+| Payments | Stripe (NOT YET AVAILABLE — build mock/placeholder) |
+| Email | Resend (NOT YET AVAILABLE — build mock/placeholder) |
+
+### NPM packages to install:
+```
+@supabase/supabase-js @supabase/ssr
+```
+Plus shadcn/ui components as needed via `npx shadcn-ui@latest init` and `npx shadcn-ui@latest add button card input label form tabs badge separator avatar dropdown-menu sheet dialog table textarea select toast`.
+
+Do NOT install `stripe`, `@stripe/stripe-js`, or `resend` yet. We'll add those later.
+
+---
+
+## SUPABASE CLIENT SETUP
+
+The database schema and RLS policies are already created in Supabase. You just need to set up the client-side connection.
+
+```typescript
+// lib/supabase/client.ts — for Client Components (browser)
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+```typescript
+// lib/supabase/server.ts — for Server Components and API routes
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  const cookieStore = await cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Can be ignored in Server Components
+          }
+        },
+      },
+    }
+  )
+}
+```
+
+---
+
+## DATABASE SCHEMA (ALREADY EXISTS IN SUPABASE — DO NOT RECREATE)
+
+The following tables already exist with Row-Level Security enabled. Reference them in your code:
+
+**profiles** — extends auth.users. Fields: `id` (UUID, FK to auth.users), `full_name`, `phone`, `address`, `date_of_birth`, `role` ('patient' | 'admin'), `avatar_url`, `created_at`, `updated_at`. A trigger auto-creates a profile row when a user signs up.
+
+**memberships** — Fields: `id`, `user_id` (FK to profiles), `tier` ('tier_1' | 'tier_2'), `status` ('active' | 'cancelled' | 'past_due' | 'paused'), `stripe_subscription_id`, `stripe_customer_id`, `current_period_start`, `current_period_end`, `cancel_at`, `minimum_commitment_end`, `credits_total`, `credits_used`, `created_at`, `updated_at`.
+
+**appointments** — Fields: `id`, `patient_id` (FK to profiles), `cal_booking_id`, `appointment_type` ('new_patient' | 'follow_up' | 'discovery'), `date`, `start_time`, `end_time`, `format` ('in_person' | 'video'), `status` ('confirmed' | 'cancelled' | 'completed' | 'no_show'), `stripe_payment_intent_id`, `used_membership_credit` (boolean), `admin_notes`, `cancellation_reason`, `created_at`, `updated_at`.
+
+**intake_forms** — Fields: `id`, `patient_id`, `full_name`, `date_of_birth`, `address`, `email`, `phone`, `emergency_contact_name`, `emergency_contact_phone`, `gp_name`, `gp_practice`, `current_medications`, `known_allergies`, `primary_health_concerns`, `consent_terms`, `consent_data_processing`, `consent_gp_disclaimer`, `completed_at`, `created_at`, `updated_at`.
+
+**food_diaries** — Fields: `id`, `patient_id`, `start_date`, `status` ('in_progress' | 'completed'), `completed_at`, `created_at`, `updated_at`.
+
+**food_diary_entries** — Fields: `id`, `food_diary_id` (FK to food_diaries), `day_number` (1-7), `meal_type` ('breakfast' | 'snack_1' | 'lunch' | 'snack_2' | 'dinner' | 'snack_3' | 'drinks'), `time`, `description`, `volume`, `location` ('at_home' | 'restaurant' | 'takeaway' | 'at_desk' | 'other'), `symptoms`, `created_at`, `updated_at`. Unique constraint on (food_diary_id, day_number, meal_type).
+
+**conversations** — Fields: `id`, `patient_id`, `status` ('active' | 'resolved' | 'needs_followup'), `last_message_at`, `unread_count_admin`, `unread_count_patient`, `created_at`, `updated_at`.
+
+**messages** — Fields: `id`, `conversation_id` (FK to conversations), `sender_id` (FK to profiles), `body`, `attachments` (JSONB), `read_at`, `created_at`. Realtime is enabled on this table.
+
+**documents** — Fields: `id`, `patient_id`, `uploaded_by`, `type` ('lab_result' | 'patient_upload' | 'food_diary' | 'intake_form'), `file_name`, `storage_path`, `file_size`, `mime_type`, `notes`, `lab_provider` ('tdl' | 'gutid' | 'teamgene'), `created_at`.
+
+**supplement_catalogue** — Fields: `id`, `name`, `brand`, `default_dosage`, `purchase_url`, `discount_code`, `notes`, `is_active`, `created_at`, `updated_at`.
+
+**patient_supplements** — Fields: `id`, `patient_id`, `supplement_id` (FK to supplement_catalogue), `custom_dosage`, `custom_notes`, `prescribed_at`, `prescribed_by`, `is_active`, `created_at`.
+
+**quick_reply_templates** — Fields: `id`, `title`, `body`, `sort_order`, `created_by`, `created_at`.
+
+**Supabase Storage buckets already created:**
+- `documents` — private, 25MB limit
+- `message-attachments` — private, 10MB limit
+
+---
+
+## PROJECT STRUCTURE
+
+```
+/app
+  layout.tsx                     — Root layout (Supabase provider, Tailwind, Inter font)
+  page.tsx                       — Root redirect (→ /login or /dashboard based on auth)
+  
+  /(auth)
+    /login/page.tsx              — Login page
+    /register/page.tsx           — Registration page
+    /verify/page.tsx             — Email verification
+    /forgot-password/page.tsx
+    /reset-password/page.tsx
+    /auth/callback/route.ts      — Supabase auth callback handler
+  
+  /(patient)
+    layout.tsx                   — Patient layout with sidebar
+    /dashboard/page.tsx          — Patient dashboard
+    /appointments/page.tsx       — Appointment list
+    /appointments/book/page.tsx  — Booking flow
+    /messages/page.tsx           — Messaging (or upsell)
+    /documents/page.tsx          — Documents
+    /food-diary/page.tsx         — 7-day food diary
+    /supplements/page.tsx        — Supplement recommendations
+    /account/page.tsx            — Account settings
+    /intake/page.tsx             — Intake form
+  
+  /(admin)
+    layout.tsx                   — Admin layout with admin sidebar
+    /admin/page.tsx              — Admin dashboard
+    /admin/patients/page.tsx     — Patient list
+    /admin/patients/[id]/page.tsx — Patient detail (tabbed)
+    /admin/calendar/page.tsx     — Calendar/schedule view
+    /admin/messages/page.tsx     — Message centre
+    /admin/supplements/page.tsx  — Supplement catalogue
+    /admin/settings/page.tsx     — Settings
+  
+  /api
+    /webhooks/stripe/route.ts    — Stripe webhooks (placeholder for now)
+
+/components
+  /ui/                           — shadcn/ui components
+  /layout/
+    Sidebar.tsx
+    AdminSidebar.tsx
+    Header.tsx
+    MobileNav.tsx
+  /dashboard/
+    NextAppointmentCard.tsx
+    PendingTasksCard.tsx
+    MessagesPreviewCard.tsx
+    RecentDocumentsCard.tsx
+    MembershipStatusCard.tsx
+  /appointments/
+    BookingFlow.tsx
+    AppointmentCard.tsx
+    TimeSlotPicker.tsx
+  /messages/
+    MessageThread.tsx
+    MessageInput.tsx
+    MessageBubble.tsx
+    UpsellCard.tsx
+  /documents/
+    DocumentList.tsx
+    DocumentUpload.tsx
+  /food-diary/
+    FoodDiaryForm.tsx
+    DayTab.tsx
+    MealEntry.tsx
+  /forms/
+    IntakeForm.tsx
+  /supplements/
+    SupplementCard.tsx
+    SupplementCatalogue.tsx
+
+/lib
+  supabase/
+    client.ts
+    server.ts
+    types.ts                     — TypeScript types matching the schema above
+  stripe/
+    placeholder.ts               — TODO: wire up when Stripe credentials available
+  email/
+    placeholder.ts               — TODO: wire up when Resend credentials available
+  utils/
+    constants.ts
+    helpers.ts
+
+/middleware.ts                   — Auth + role-based routing middleware
+```
+
+---
+
+## CONSTANTS
+
+```typescript
+// lib/utils/constants.ts
+
+export const APPOINTMENT_TYPES = {
+  new_patient: {
+    name: 'New Patient Consultation',
+    duration: 60,
+    pricePence: 22000,
+    priceDisplay: '£220',
+    description: 'Comprehensive first consultation including full medical & nutritional assessment',
+  },
+  follow_up: {
+    name: 'Follow-Up Consultation',
+    duration: 45,
+    pricePence: 19500,
+    priceDisplay: '£195',
+    description: 'Follow-up discussion including review of test results and progress',
+  },
+  discovery: {
+    name: 'Free Discovery Call',
+    duration: 15,
+    pricePence: 0,
+    priceDisplay: 'Free',
+    description: 'A brief introductory call to discuss whether we are a good fit',
+  },
+} as const;
+
+export const MEMBERSHIP_TIERS = {
+  tier_1: {
+    name: 'Essential',
+    pricePence: 42000,
+    priceDisplay: '£420/month',
+    consultationsPerMonth: 2,
+    minimumMonths: 3,
+    features: [
+      '2 consultations per month',
+      'Direct messaging with Dr Sarah',
+      'Priority booking',
+    ],
+  },
+  tier_2: {
+    name: 'Premium',
+    pricePence: 81000,
+    priceDisplay: '£810/month',
+    consultationsPerMonth: 4,
+    minimumMonths: 3,
+    features: [
+      '4 consultations per month (weekly)',
+      'Direct messaging with Dr Sarah',
+      'Priority booking',
+      'Extended consultation time',
+    ],
+  },
+} as const;
+
+export const CLINIC_INFO = {
+  name: 'Pulse & Function',
+  address: '52 Queen Anne Street, SameDay Doctor, London, W1G 8HL',
+  email: 'hello@pulseandfunction.com',
+  doctorName: 'Dr Sarah Al-Temimi',
+  credentials: 'MBBS BSc MSc(SEM) DipNutr(CNM) AFMCP',
+} as const;
+
+export type AppointmentType = keyof typeof APPOINTMENT_TYPES;
+export type MembershipTier = keyof typeof MEMBERSHIP_TIERS;
+```
+
+---
+
+## AUTH MIDDLEWARE
+
+```typescript
+// middleware.ts
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const path = request.nextUrl.pathname
+  const isAuthPage = path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/forgot-password') || path.startsWith('/reset-password') || path.startsWith('/verify')
+  const isProtected = path.startsWith('/dashboard') || path.startsWith('/admin') || path.startsWith('/appointments') || path.startsWith('/messages') || path.startsWith('/documents') || path.startsWith('/food-diary') || path.startsWith('/supplements') || path.startsWith('/account') || path.startsWith('/intake')
+
+  // Not logged in trying to access protected route
+  if (!user && isProtected) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // Logged in trying to access auth pages — redirect to appropriate dashboard
+  if (user && isAuthPage) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const dest = profile?.role === 'admin' ? '/admin' : '/dashboard'
+    return NextResponse.redirect(new URL(dest, request.url))
+  }
+
+  // Root path — redirect based on role
+  if (user && path === '/') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const dest = profile?.role === 'admin' ? '/admin' : '/dashboard'
+    return NextResponse.redirect(new URL(dest, request.url))
+  }
+
+  // Admin route protection — only admin role can access /admin/*
+  if (user && path.startsWith('/admin')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+  }
+
+  return supabaseResponse
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
+```
+
+---
+
+## DESIGN DIRECTION
+
+This portal should feel like a **premium private clinic's digital experience** — calm, trustworthy, and beautifully minimal. Match the aesthetic of the existing Webflow site at pulseandfunction.com.
+
+### Colours
+- Primary: `#2D5BFF` (deep blue — CTAs, active states, links)
+- Background: `#FFFFFF` main, `#F8F9FC` for section backgrounds
+- Text: `#1A1A1A` body, `#6B7280` secondary
+- Success: `#10B981` · Warning: `#F59E0B` · Error: `#EF4444`
+- Border: `#E5E7EB`
+
+### Typography
+- Font: Inter (import via `next/font/google`)
+- Clean hierarchy: large headings, generous line height, ample whitespace
+
+### UI Rules
+- Cards: `rounded-xl border border-gray-200` with `hover:shadow-md` transitions
+- Generous padding and spacing. Never cramped.
+- Skeleton loaders during data fetches (never blank white screens)
+- Helpful empty states with CTAs — e.g. "You have no upcoming appointments. Book your first consultation →"
+- Mobile-first: sidebar collapses to a bottom tab bar or hamburger sheet on mobile
+- No harsh medical aesthetics. No red crosses. Think wellness spa meets doctor's office.
+
+---
+
+## BUILD ORDER — START WITH THESE IN SEQUENCE
+
+### 1. Project scaffold + Supabase connection
+- Next.js 14 with App Router, TypeScript, Tailwind CSS
+- Install and initialise shadcn/ui
+- Create Supabase client files (`lib/supabase/client.ts` and `lib/supabase/server.ts`)
+- Create the middleware (`middleware.ts`)
+- Create a Supabase auth callback route at `/app/auth/callback/route.ts`:
+```typescript
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/dashboard'
+
+  if (code) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
+    }
+  }
+  return NextResponse.redirect(`${origin}/login?error=auth`)
+}
+```
+- **Test:** Verify the app loads and the Supabase client can connect (even just a console.log of the connection).
+
+### 2. Authentication pages
+- **Register** (`/register`): Form fields — Full Name, Email, Phone Number, Password, Confirm Password. Two consent checkboxes: "I agree to the Terms & Conditions" and "I consent to the processing of my personal data in accordance with the Privacy Policy". Submit calls `supabase.auth.signUp({ email, password, options: { data: { full_name: name } } })`. On success → show "Check your email to verify your account" message.
+- **Login** (`/login`): Email + Password. Submit calls `supabase.auth.signInWithPassword()`. On success → redirect to /dashboard (or /admin if admin). Include "Forgot password?" link.
+- **Forgot Password** (`/forgot-password`): Email field. Calls `supabase.auth.resetPasswordForEmail()`.
+- **Reset Password** (`/reset-password`): New password + confirm. Calls `supabase.auth.updateUser({ password })`.
+- **Verify** (`/verify`): Simple page saying "Please check your email and click the verification link."
+- All auth pages should be beautifully designed with the P&F logo centred, a calming background, and the form in a centered card.
+- **Test:** Register a test user, verify email, log in, confirm you reach /dashboard.
+
+### 3. Patient sidebar layout + dashboard shell
+- **Patient Layout** (`/(patient)/layout.tsx`): Left sidebar on desktop, bottom nav on mobile. Sidebar items: Dashboard, Appointments, Messages, Documents, Food Diary, Supplements, Account. Show logged-in user's name and a logout button. P&F logo at the top of the sidebar.
+- **Dashboard** (`/dashboard`): Card grid layout with placeholder data:
+  - Next Appointment card (query `appointments` table for next confirmed appointment where `patient_id = auth.uid()` and `date >= today` order by date ASC limit 1)
+  - Pending Tasks card (check if `intake_forms` exists for this user; check if `food_diaries` with status 'in_progress' exists)
+  - Messages Preview card (check if user has an active membership in `memberships` table → if yes, show last message preview from `messages` table via `conversations`; if no, show an upsell card saying "Direct messaging with Dr Sarah is available to members. Explore membership plans →")
+  - Recent Documents card (query `documents` where `patient_id = auth.uid()` order by `created_at` DESC limit 3)
+  - Membership Status card (query `memberships` where `user_id = auth.uid()` and `status = 'active'` — if exists, show tier name, credits used/total, next billing date; if not, don't show this card)
+- **Test:** Log in as test patient, see the dashboard with empty states and helpful CTAs.
+
+### 4. Admin sidebar layout + admin dashboard shell
+- **Admin Layout** (`/(admin)/layout.tsx`): Wider sidebar. Items: Dashboard, Patients, Calendar, Messages, Supplements, Settings. Show "Dr Sarah Al-Temimi" and admin badge.
+- **Admin Dashboard** (`/admin`): 
+  - Today's appointments (query `appointments` where `date = today` ordered by `start_time`, joined with `profiles` to get patient names)
+  - Unread messages count (query `conversations` where `unread_count_admin > 0`)
+  - Quick stats: count of active memberships, count of appointments this week
+- To test admin, manually set a user's `role` to `'admin'` in the Supabase profiles table.
+- **Test:** Log in as admin user, confirm you reach /admin and see the admin dashboard.
+
+### 5. Appointment booking flow (WITHOUT real Stripe — use placeholder)
+- **Appointments list** (`/appointments`): Two tabs — "Upcoming" and "Past". Query appointments for the logged-in patient. Each appointment shows as a card with date, time, type, format, status. Upcoming appointments have "Cancel" button.
+- **Booking flow** (`/appointments/book`): Multi-step form:
+  - **Step 1 — Type**: Cards for "New Patient Consultation — £220", "Follow-Up Consultation — £195". If user has an active membership with `credits_used < credits_total`, also show "Use Membership Credit" option.
+  - **Step 2 — Format**: "In-Person" (show address: 52 Queen Anne St) or "Video Call"
+  - **Step 3 — Date & Time**: Build a simple weekly calendar. Show Mon-Fri slots from 9:00-17:00 in 60-min blocks (for new patient) or 45-min blocks (for follow-up). Grey out slots that already have appointments in the database. Allow navigating weeks forward/back.
+  - **Step 4 — Confirm**: Summary card showing all details + price. If payment needed, show a "Pay £XXX" button that for now just creates the appointment directly (TODO: wire to Stripe later). If membership credit, show "Confirm Booking" button. On confirm → insert into `appointments` table, if membership credit → increment `credits_used` on the membership row. Show a success page.
+- **Test:** Book a test appointment. Verify it appears in the appointments list and on the dashboard.
+
+### 6. Patient list (admin)
+- **Patient list** (`/admin/patients`): Query all profiles where `role = 'patient'`, joined with memberships to show status. Searchable by name. Columns: Name, Email, Membership Status, Last Appointment Date. Clicking a row navigates to `/admin/patients/[id]`.
+- **Patient detail** (`/admin/patients/[id]`): Tabbed view — just build the shell with tabs for: Overview, Appointments, Documents, Messages, Supplements, Notes, Forms. The Overview tab should show the patient's profile info and membership status. Other tabs can be placeholders for now.
+- **Test:** As admin, view the patient list, click into a patient, see their profile.
+
+---
+
+## AFTER THESE 6 STEPS ARE DONE — STOP AND TELL ME
+
+Do NOT continue to build messaging, food diary, documents, supplements, intake forms, or email notifications. Those are Phase 2 and 3. Get the above 6 steps solid, tested, and working first. Then we'll proceed.
+
+---
+
+## IMPORTANT REMINDERS
+
+1. **ALL auth is Supabase Auth. ALL data is in Supabase PostgreSQL. ALL files go in Supabase Storage. DO NOT use any Replit-native database or auth system.**
+
+2. **Stripe is not available yet.** The booking flow should work end-to-end but skip actual payment — just insert the appointment record directly. Add a clear `// TODO: Replace with Stripe checkout session` comment where payment would happen.
+
+3. **After the Replit preview URL is generated**, I need to go to Supabase Dashboard → Auth → URL Configuration and add it as the Site URL and to the Redirect URLs list, or else email verification/password reset won't work. Remind me of this.
+
+4. **To create the admin user**: After registering a test user, go to Supabase Dashboard → Table Editor → profiles table → find the user → change `role` from `patient` to `admin`. This is the only way to make an admin for now (no admin registration UI needed).
+
+5. Use `'use client'` directive only on components that need browser APIs or React hooks. Keep Server Components as the default.
+
+6. Handle loading and error states on every page. Use shadcn/ui Skeleton components for loading. Use toast notifications for success/error feedback.

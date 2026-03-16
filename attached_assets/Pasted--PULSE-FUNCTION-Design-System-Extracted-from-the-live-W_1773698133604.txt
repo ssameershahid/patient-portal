@@ -1,0 +1,255 @@
+# PULSE & FUNCTION — Design System
+# Extracted from the live Webflow website (pulseandfunction.webflow.io)
+# Replace the DESIGN DIRECTION section in your Replit prompt with this
+
+---
+
+## DESIGN DIRECTION
+
+The portal must feel like a seamless continuation of the Webflow marketing site. The website uses a warm, earthy, wellness-meets-clinical aesthetic — **NOT blue/tech**. Think premium wellness spa crossed with a private doctor's consulting room.
+
+### Colour Palette (extracted from the website)
+
+**Primary — Forest Green** (nav bar, dark sections, CTA buttons, sidebar, footer):
+- `green-900`: #111A12
+- `green-800`: #1E2B20 ← sidebar bg, footer, nav
+- `green-700`: #2C3E2D ← primary CTA buttons, headings on light bg
+- `green-600`: #3A5A3E
+- `green-500`: #4A7C59 ← sage accent, icon fills, active states
+- `green-400`: #6B9C72
+- `green-300`: #8BAF8E ← secondary text on dark bg, inactive nav
+- `green-200`: #C1D5C3
+- `green-100`: #D4DFD2 ← subtle green background (certifications section)
+- `green-50`:  #E8F0E8 ← lightest green tint for badges, icon backgrounds
+
+**Accent — Warm Terracotta** (highlights, stat numbers, notification badges, "Start testing" CTA):
+- `warm-900`: #3D2A16
+- `warm-800`: #6B4A28
+- `warm-700`: #9A6A3A
+- `warm-600`: #B47B42
+- `warm-500`: #C4884D ← primary accent colour
+- `warm-400`: #D4A06A
+- `warm-300`: #DDB580
+- `warm-200`: #F0D8B8
+- `warm-100`: #FAF0E4
+- `warm-50`:  #FDF8F0
+
+**Neutral — Warm Browns & Creams** (backgrounds, text, borders):
+- `cream-50`:  #FDFAF5 ← lightest, near-white
+- `cream-100`: #FAF6EF ← card backgrounds
+- `cream-200`: #F5EDE3 ← main page background (NOT white)
+- `cream-300`: #EBE1D4 ← input backgrounds
+- `cream-400`: #E8E2D8 ← card borders
+- `cream-500`: #D4CFC7 ← input borders
+
+**Text colours** (on light/cream backgrounds):
+- Primary text: #3D3730 (warm dark brown — NOT black)
+- Secondary text: #8B8578 (warm medium gray)
+- Muted text: #ADA89E
+
+**Text colours** (on dark green backgrounds):
+- Primary: #FAF6EF (cream white)
+- Secondary: #C1D5C3 (light sage)
+- Muted: #8BAF8E
+
+**Semantic colours** (use sparingly):
+- Success: #4A7C59 (reuse sage green — stays on-brand)
+- Warning: #C4884D (reuse terracotta)
+- Error: #C45D4D (warm red, not harsh)
+- Error light bg: #FEF2F0
+- Info: #4A7C8E (muted teal-blue, subtle)
+
+### Typography
+
+**Headings:** DM Sans (or Outfit) — clean, geometric, slightly warm character
+**Body:** Inter — readable, neutral, pairs well
+**Both from Google Fonts**, loaded via `next/font/google`
+
+**Sizing:**
+- H1: 32px / font-weight: 700
+- H2: 24px / font-weight: 600
+- H3: 18px / font-weight: 600
+- Body: 14-15px / font-weight: 400
+- Small/caption: 12-13px / font-weight: 400-500
+- Generous line-height: 1.6 for body, 1.3 for headings
+
+### Component Design Language
+
+**Buttons:**
+- Primary: `bg-green-700 text-cream-100 rounded-full px-7 py-3` — pill-shaped, not square
+- Secondary: `border-1.5 border-green-700 text-green-700 rounded-full px-7 py-3`
+- Accent: `bg-warm-500 text-white rounded-full px-7 py-3` — for special CTAs
+- Pill-shaped (border-radius: 999px) is the website's button style, not rounded-lg
+
+**Cards:**
+- Background: #FFFFFF (pure white) or #FAF6EF (cream) — NOT cold gray
+- Border: `1px solid #E8E2D8` (warm border, not gray)
+- Border-radius: 16px (`rounded-2xl`)
+- Padding: 20-24px
+- No box-shadow by default. Subtle `shadow-sm` on hover only.
+- Inner highlighted areas use cream-100 (#FAF6EF) background with 10-12px border-radius
+
+**Sidebar (Patient):**
+- Background: #1E2B20 (deep green)
+- Active item: `rgba(255,255,255,0.08)` background, cream text
+- Inactive items: #8BAF8E (sage) text
+- Notification badges: #C4884D (terracotta) with white text
+- User avatar: initials on green-700 background with sage text
+- Width: 240px desktop, collapses to bottom nav on mobile
+
+**Input fields:**
+- Background: #FAF6EF or #F5EDE3 (warm, not gray)
+- Border: `1px solid #E8E2D8`
+- Focus border: #4A7C59 (sage green)
+- Border-radius: 10-12px
+- Padding: 12px 16px
+- Placeholder text: #ADA89E
+
+**Badges/Pills:**
+- Green badge: `bg-green-50 text-green-700`
+- Warm badge: `bg-warm-100 text-warm-700`
+- Error badge: `bg-[#FEF2F0] text-[#C45D4D]`
+- Neutral badge: `bg-green-100 text-green-800`
+- All: `rounded-full px-3 py-1 text-xs font-medium`
+
+**Page backgrounds:**
+- Default page bg: #F5EDE3 (warm cream) — NOT white
+- Section alternation: cream-200 ↔ cream-50
+- The portal should feel warm, not sterile
+
+### Overall Aesthetic Rules
+
+1. **Warm cream backgrounds everywhere** — cold white or gray should feel jarring if it appears
+2. **Pill-shaped buttons** — the website uses fully rounded buttons, not squared-off
+3. **Forest green is the primary action colour** — not blue, not purple
+4. **Terracotta is the accent** — draws the eye to key numbers, badges, highlighted actions
+5. **Generous whitespace** — let the content breathe, never cramped
+6. **No harsh medical aesthetics** — no red crosses, no hospital imagery, no clinical blue
+7. **Mobile-first** — sidebar collapses to bottom tab bar, cards stack vertically
+8. **Skeleton loaders** use cream backgrounds, not gray pulsing blocks
+9. **Empty states** are warm and helpful with CTAs, never "No data found"
+10. **Icons:** Use Lucide icons. Stroke-style (not filled). In sage green on light bg, in cream on dark bg.
+
+---
+
+## TAILWIND CONFIG (tailwind.config.ts)
+
+```typescript
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Primary — Forest Green
+        forest: {
+          50:  '#E8F0E8',
+          100: '#D4DFD2',
+          200: '#C1D5C3',
+          300: '#8BAF8E',
+          400: '#6B9C72',
+          500: '#4A7C59',
+          600: '#3A5A3E',
+          700: '#2C3E2D',
+          800: '#1E2B20',
+          900: '#111A12',
+        },
+        // Accent — Warm Terracotta
+        warm: {
+          50:  '#FDF8F0',
+          100: '#FAF0E4',
+          200: '#F0D8B8',
+          300: '#DDB580',
+          400: '#D4A06A',
+          500: '#C4884D',
+          600: '#B47B42',
+          700: '#9A6A3A',
+          800: '#6B4A28',
+          900: '#3D2A16',
+        },
+        // Neutral — Warm Creams
+        cream: {
+          50:  '#FDFAF5',
+          100: '#FAF6EF',
+          200: '#F5EDE3',
+          300: '#EBE1D4',
+          400: '#E8E2D8',
+          500: '#D4CFC7',
+          600: '#ADA89E',
+          700: '#8B8578',
+          800: '#5A5549',
+          900: '#3D3730',
+        },
+        // Semantic
+        error: {
+          DEFAULT: '#C45D4D',
+          light: '#FEF2F0',
+        },
+        info: {
+          DEFAULT: '#4A7C8E',
+          light: '#EDF5F8',
+        },
+      },
+      fontFamily: {
+        heading: ['var(--font-dm-sans)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        'pill': '999px',
+        '2xl': '16px',
+        'xl': '12px',
+        'lg': '10px',
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+};
+
+export default config;
+```
+
+## FONT SETUP (app/layout.tsx)
+
+```typescript
+import { DM_Sans, Inter } from 'next/font/google'
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dm-sans',
+  weight: ['400', '500', '600', '700'],
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  weight: ['400', '500', '600'],
+})
+
+// In the body tag:
+// <body className={`${dmSans.variable} ${inter.variable} font-body bg-cream-200 text-cream-900`}>
+```
+
+## GLOBAL CSS ADDITIONS (app/globals.css — after Tailwind imports)
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream-200 text-cream-900 font-body antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+```
