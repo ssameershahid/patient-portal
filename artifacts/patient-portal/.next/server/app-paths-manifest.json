@@ -4,5 +4,8 @@
   "/(patient)/intake/page": "app/(patient)/intake/page.js",
   "/(patient)/appointments/page": "app/(patient)/appointments/page.js",
   "/(patient)/messages/page": "app/(patient)/messages/page.js",
-  "/(patient)/documents/page": "app/(patient)/documents/page.js"
+  "/(patient)/documents/page": "app/(patient)/documents/page.js",
+  "/(patient)/food-diary/page": "app/(patient)/food-diary/page.js",
+  "/(patient)/supplements/page": "app/(patient)/supplements/page.js",
+  "/(patient)/account/page": "app/(patient)/account/page.js"
 }
