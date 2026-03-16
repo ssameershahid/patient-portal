@@ -49,7 +49,7 @@ const MOCK_DOCUMENTS = [
   { id: '3', file_name: 'Previous GP Records.pdf', type: 'patient_upload', lab_provider: null, created_at: '2026-02-15T09:00:00Z' },
 ]
 
-const MOCK_MESSAGES = [
+const MOCK_MESSAGES: { id: string; sender: 'admin' | 'patient'; body: string; created_at: string; read_at: string | null }[] = [
   { id: '1', sender: 'patient', body: 'Hi Dr Sarah, I had a question about the magnesium supplement.', created_at: '2026-03-15T08:00:00Z', read_at: '2026-03-15T09:00:00Z' },
   { id: '2', sender: 'admin', body: 'Keep taking it in the evening — it supports sleep quality.', created_at: '2026-03-15T14:20:00Z', read_at: null },
 ]
@@ -100,6 +100,7 @@ function formatTime(t: string) {
 export default function AdminPatientDetailPage() {
   const [newNote, setNewNote] = useState('')
   const [newMessage, setNewMessage] = useState('')
+  const [patientMessages, setPatientMessages] = useState(MOCK_MESSAGES)
   const [conversationStatus, setConversationStatus] = useState('active')
   const [addSuppOpen, setAddSuppOpen] = useState(false)
 
@@ -337,7 +338,7 @@ export default function AdminPatientDetailPage() {
               </Select>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {MOCK_MESSAGES.map((msg) => {
+              {patientMessages.map((msg) => {
                 const isAdmin = msg.sender === 'admin'
                 return (
                   <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
@@ -379,8 +380,21 @@ export default function AdminPatientDetailPage() {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && newMessage.trim()) {
+                      e.preventDefault()
+                      const msg = { id: String(Date.now()), sender: 'admin' as const, body: newMessage.trim(), created_at: new Date().toISOString(), read_at: null }
+                      setPatientMessages(prev => [...prev, msg])
+                      setNewMessage('')
+                    }
+                  }}
                 />
-                <Button size="sm" className="h-10 w-10 p-0" disabled={!newMessage.trim()}>
+                <Button size="sm" className="h-10 w-10 p-0" disabled={!newMessage.trim()} onClick={() => {
+                  if (!newMessage.trim()) return
+                  const msg = { id: String(Date.now()), sender: 'admin' as const, body: newMessage.trim(), created_at: new Date().toISOString(), read_at: null }
+                  setPatientMessages(prev => [...prev, msg])
+                  setNewMessage('')
+                }} aria-label="Send reply">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

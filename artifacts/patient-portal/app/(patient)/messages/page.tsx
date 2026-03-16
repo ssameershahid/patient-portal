@@ -11,7 +11,16 @@ import Link from 'next/link'
 
 const IS_MEMBER = true
 
-const MOCK_MESSAGES = [
+type Message = {
+  id: string
+  sender: 'admin' | 'patient'
+  body: string
+  created_at: string
+  read_at: string | null
+  attachments: { name: string; size: string }[] | null
+}
+
+const INITIAL_MESSAGES: Message[] = [
   {
     id: '1',
     sender: 'admin',
@@ -90,14 +99,31 @@ function NonMemberView() {
 }
 
 export default function MessagesPage() {
+  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
   const [newMessage, setNewMessage] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
+  }, [messages])
 
   if (!IS_MEMBER) return <NonMemberView />
+
+  function handleSend() {
+    const text = newMessage.trim()
+    if (!text) return
+
+    const msg: Message = {
+      id: String(Date.now()),
+      sender: 'patient',
+      body: text,
+      created_at: new Date().toISOString(),
+      read_at: null,
+      attachments: null,
+    }
+    setMessages(prev => [...prev, msg])
+    setNewMessage('')
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
@@ -113,7 +139,7 @@ export default function MessagesPage() {
 
       <Card className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-          {MOCK_MESSAGES.map((msg) => {
+          {messages.map((msg) => {
             const isPatient = msg.sender === 'patient'
             return (
               <div key={msg.id} className={`flex ${isPatient ? 'justify-end' : 'justify-start'}`}>
@@ -172,7 +198,7 @@ export default function MessagesPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 shrink-0">
+            <Button variant="ghost" size="sm" className="h-10 w-10 p-0 shrink-0" aria-label="Attach file">
               <Paperclip className="h-4 w-4" />
             </Button>
             <Input
@@ -181,8 +207,9 @@ export default function MessagesPage() {
               onChange={(e) => setNewMessage(e.target.value)}
               className="flex-1"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && newMessage.trim()) {
-                  setNewMessage('')
+                if (e.key === 'Enter' && !e.shiftKey && newMessage.trim()) {
+                  e.preventDefault()
+                  handleSend()
                 }
               }}
             />
@@ -190,7 +217,8 @@ export default function MessagesPage() {
               size="sm"
               className="h-10 w-10 p-0 shrink-0"
               disabled={!newMessage.trim()}
-              onClick={() => setNewMessage('')}
+              onClick={handleSend}
+              aria-label="Send message"
             >
               <Send className="h-4 w-4" />
             </Button>

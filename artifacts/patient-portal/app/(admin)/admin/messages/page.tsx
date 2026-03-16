@@ -57,7 +57,7 @@ const MOCK_THREADS = [
   },
 ]
 
-const MOCK_MESSAGES = [
+const MOCK_MESSAGES: { id: string; sender: 'admin' | 'patient'; body: string; created_at: string; read_at: string | null }[] = [
   {
     id: '1',
     sender: 'patient',
@@ -94,6 +94,14 @@ const FILTERS: { key: ThreadFilter; label: string }[] = [
   { key: 'resolved', label: 'Resolved' },
 ]
 
+type AdminMessage = {
+  id: string
+  sender: 'admin' | 'patient'
+  body: string
+  created_at: string
+  read_at: string | null
+}
+
 export default function AdminMessagesPage() {
   const [filter, setFilter] = useState<ThreadFilter>('all')
   const [selectedThread, setSelectedThread] = useState(MOCK_THREADS[0])
@@ -101,6 +109,7 @@ export default function AdminMessagesPage() {
   const [replyText, setReplyText] = useState('')
   const [conversationStatus, setConversationStatus] = useState('active')
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
+  const [messages, setMessages] = useState<AdminMessage[]>(MOCK_MESSAGES)
 
   const filteredThreads = MOCK_THREADS.filter(t => {
     if (filter === 'unread') return t.unreadCount > 0
@@ -114,6 +123,21 @@ export default function AdminMessagesPage() {
   function handleSelectThread(thread: typeof MOCK_THREADS[0]) {
     setSelectedThread(thread)
     setMobileShowConvo(true)
+  }
+
+  function handleSendReply() {
+    const text = replyText.trim()
+    if (!text) return
+
+    const msg: AdminMessage = {
+      id: String(Date.now()),
+      sender: 'admin',
+      body: text,
+      created_at: new Date().toISOString(),
+      read_at: null,
+    }
+    setMessages(prev => [...prev, msg])
+    setReplyText('')
   }
 
   return (
@@ -222,7 +246,7 @@ export default function AdminMessagesPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {MOCK_MESSAGES.map((msg) => {
+            {messages.map((msg) => {
               const isAdmin = msg.sender === 'admin'
               return (
                 <div key={msg.id} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
@@ -277,8 +301,14 @@ export default function AdminMessagesPage() {
                 onChange={(e) => setReplyText(e.target.value)}
                 rows={1}
                 className="flex-1 min-h-[40px] max-h-24 resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && replyText.trim()) {
+                    e.preventDefault()
+                    handleSendReply()
+                  }
+                }}
               />
-              <Button size="sm" className="h-10 w-10 p-0 shrink-0" disabled={!replyText.trim()}>
+              <Button size="sm" className="h-10 w-10 p-0 shrink-0" disabled={!replyText.trim()} onClick={handleSendReply} aria-label="Send reply">
                 <Send className="h-4 w-4" />
               </Button>
             </div>
