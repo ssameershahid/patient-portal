@@ -37,7 +37,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-cream-200">
-      <div className="hidden lg:block lg:w-1/2 relative">
+      <div className="hidden lg:block lg:w-2/5 relative">
         <img
           src="/login-feature.webp"
           alt="Pulse & Function"
