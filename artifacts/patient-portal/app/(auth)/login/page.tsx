@@ -7,7 +7,6 @@ import { login } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Heart } from 'lucide-react'
 
 export default function LoginPage() {
   const [error, setError] = useState('')
@@ -47,9 +46,6 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-              <Heart className="w-5 h-5 text-warm-300" />
-            </div>
             <span className="text-lg font-heading font-semibold tracking-wide text-white/90">Pulse & Function</span>
           </div>
           <h2 className="text-4xl font-heading font-bold leading-tight mb-4">
