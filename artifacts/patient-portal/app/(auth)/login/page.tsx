@@ -54,7 +54,14 @@ export default function LoginPage() {
           <p className="text-lg text-white/70 leading-relaxed max-w-md">
             Access your appointments, lab results, treatment plans, and communicate with your care team — anytime, anywhere.
           </p>
-          <div className="mt-12 flex gap-8">
+          <div className="mt-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+            <img
+              src="/login-feature.webp"
+              alt="Pulse & Function clinic"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+          <div className="mt-10 flex gap-8">
             <div>
               <div className="text-2xl font-heading font-bold text-warm-300">Secure</div>
               <div className="text-sm text-white/50 mt-1">End-to-end encrypted</div>
