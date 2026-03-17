@@ -16,13 +16,21 @@ export async function login(email: string, password: string): Promise<{ error?: 
     return { error: 'Login failed. Please try again.' }
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
     .single()
 
-  if (profile?.role === 'admin') {
+  if (profileError) {
+    console.warn('[Login] Profile fetch failed:', profileError.message, '— checking user metadata')
+  }
+
+  const role = profile?.role
+    || data.user.app_metadata?.role
+    || data.user.user_metadata?.role
+
+  if (role === 'admin') {
     return { redirect: '/admin' }
   }
 

@@ -38,6 +38,12 @@ function getSupabase() {
   return _supabase
 }
 
+function getRoleFromUser(user: User): 'patient' | 'admin' {
+  const metaRole = user.app_metadata?.role || user.user_metadata?.role
+  if (metaRole === 'admin') return 'admin'
+  return 'patient'
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -45,20 +51,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabaseRef = useRef(getSupabase())
   const supabase = supabaseRef.current
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (currentUser: User) => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('role, full_name')
-        .eq('id', userId)
+        .eq('id', currentUser.id)
         .single()
+
+      if (error) {
+        console.warn('[AuthProvider] Profile fetch failed:', error.message, '— falling back to user metadata')
+        const fallbackRole = getRoleFromUser(currentUser)
+        setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
+        return
+      }
+
       if (data) {
         setProfile({ role: data.role ?? 'patient', full_name: data.full_name })
       } else {
-        setProfile({ role: 'patient', full_name: null })
+        const fallbackRole = getRoleFromUser(currentUser)
+        setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
       }
-    } catch {
-      setProfile({ role: 'patient', full_name: null })
+    } catch (err) {
+      console.error('[AuthProvider] Profile fetch exception:', err)
+      const fallbackRole = getRoleFromUser(currentUser)
+      setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
     }
   }, [supabase])
 
@@ -70,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return
       setUser(currentUser)
       if (currentUser) {
-        await fetchProfile(currentUser.id)
+        await fetchProfile(currentUser)
       }
       if (!cancelled) setLoading(false)
     }
@@ -83,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const newUser = session?.user ?? null
         setUser(newUser)
         if (newUser) {
-          await fetchProfile(newUser.id)
+          await fetchProfile(newUser)
         } else {
           setProfile(null)
         }
