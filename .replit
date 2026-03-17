@@ -9,8 +9,8 @@ modules = ["nodejs-24"]
   [deployment]
   router = "application"
   deploymentTarget = "autoscale"
-  build = ["pnpm", "run", "--filter", "@workspace/patient-portal", "build"]
-  run = ["pnpm", "run", "--filter", "@workspace/patient-portal", "start"]
+  build = ["bash", "-c", "pnpm run --filter @workspace/patient-portal build && cp -r artifacts/patient-portal/public artifacts/patient-portal/.next/standalone/artifacts/patient-portal/public && cp -r artifacts/patient-portal/.next/static artifacts/patient-portal/.next/standalone/artifacts/patient-portal/.next/static"]
+  run = ["bash", "-c", "PORT=3000 node artifacts/patient-portal/.next/standalone/artifacts/patient-portal/server.js"]
 
   [deployment.postBuild]
   args = ["pnpm", "store", "prune"]
