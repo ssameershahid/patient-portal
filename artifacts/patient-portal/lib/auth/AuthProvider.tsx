@@ -59,29 +59,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = supabaseRef.current
 
   const fetchProfile = useCallback(async (currentUser: User) => {
-    try {
-      const result = await withTimeout(
-        supabase
-          .from('profiles')
-          .select('role, full_name')
-          .eq('id', currentUser.id)
-          .single(),
-        5000,
-        { data: null, error: { message: 'Profile fetch timed out' } as any }
-      )
+    const fallback = () => {
+      const fallbackRole = getRoleFromUser(currentUser)
+      setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
+    }
 
-      if (result.error || !result.data) {
-        console.warn('[AuthProvider] Profile fetch issue:', result.error?.message, '— using metadata fallback')
-        const fallbackRole = getRoleFromUser(currentUser)
-        setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
+    try {
+      const query = supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', currentUser.id)
+        .single()
+
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
+      const result = await Promise.race([query, timeoutPromise])
+
+      if (!result || 'error' in result && result.error || !('data' in result) || !result.data) {
+        const msg = result && 'error' in result ? (result as any).error?.message : 'timed out'
+        console.warn('[AuthProvider] Profile fetch issue:', msg, '— using metadata fallback')
+        fallback()
         return
       }
 
-      setProfile({ role: result.data.role ?? 'patient', full_name: result.data.full_name })
+      const profileData = (result as any).data
+      setProfile({ role: profileData.role ?? 'patient', full_name: profileData.full_name })
     } catch (err) {
       console.error('[AuthProvider] Profile fetch exception:', err)
-      const fallbackRole = getRoleFromUser(currentUser)
-      setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
+      fallback()
     }
   }, [supabase])
 
