@@ -7,8 +7,7 @@ import { login } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CLINIC_INFO } from '@/lib/utils/constants'
+import { Heart } from 'lucide-react'
 
 export default function LoginPage() {
   const [error, setError] = useState('')
@@ -38,67 +37,108 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold font-heading text-forest-700">{CLINIC_INFO.name}</h1>
-          <p className="text-cream-700 mt-2">Patient Portal</p>
+    <div className="min-h-screen flex bg-cream-200">
+      <div className="hidden lg:flex lg:w-1/2 bg-forest-700 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-forest-700 via-forest-600 to-forest-800" />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-warm-300 blur-3xl" />
+          <div className="absolute bottom-32 right-16 w-80 h-80 rounded-full bg-forest-400 blur-3xl" />
+          <div className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full bg-cream-300 blur-3xl" />
         </div>
+        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+              <Heart className="w-5 h-5 text-warm-300" />
+            </div>
+            <span className="text-lg font-heading font-semibold tracking-wide text-white/90">Pulse & Function</span>
+          </div>
+          <h2 className="text-4xl font-heading font-bold leading-tight mb-4">
+            Your health journey,<br />all in one place.
+          </h2>
+          <p className="text-lg text-white/70 leading-relaxed max-w-md">
+            Access your appointments, lab results, treatment plans, and communicate with your care team — anytime, anywhere.
+          </p>
+          <div className="mt-12 flex gap-8">
+            <div>
+              <div className="text-2xl font-heading font-bold text-warm-300">Secure</div>
+              <div className="text-sm text-white/50 mt-1">End-to-end encrypted</div>
+            </div>
+            <div>
+              <div className="text-2xl font-heading font-bold text-warm-300">24/7</div>
+              <div className="text-sm text-white/50 mt-1">Always accessible</div>
+            </div>
+            <div>
+              <div className="text-2xl font-heading font-bold text-warm-300">Private</div>
+              <div className="text-sm text-white/50 mt-1">Your data, your control</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">
-                  {error}
-                </div>
-              )}
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
+            <div className="w-9 h-9 rounded-xl bg-forest-700 flex items-center justify-center">
+              <Heart className="w-4 h-4 text-warm-300" />
+            </div>
+            <span className="text-xl font-heading font-bold text-forest-700">Pulse & Function</span>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                />
+          <div className="mb-8">
+            <h1 className="text-2xl font-heading font-bold text-cream-900">Welcome back</h1>
+            <p className="text-cream-600 mt-1">Sign in to continue to your portal</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">
+                {error}
               </div>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm font-medium text-cream-700">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                className="h-11"
+                autoComplete="email"
+              />
+            </div>
 
-              <Button type="submit" className="w-full" disabled={isPending}>
-                {isPending ? 'Signing in...' : 'Sign In'}
-              </Button>
-
-              <div className="flex items-center justify-between text-sm">
-                <Link href="/forgot-password" className="text-forest-500 hover:underline">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium text-cream-700">Password</Label>
+                <Link href="/forgot-password" className="text-xs text-forest-500 hover:text-forest-700 transition-colors">
                   Forgot password?
                 </Link>
-                <Link href="/register" className="text-forest-500 hover:underline">
-                  Create account
-                </Link>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                required
+                className="h-11"
+                autoComplete="current-password"
+              />
+            </div>
 
-        <p className="text-center text-xs text-cream-600 mt-6">
-          {CLINIC_INFO.doctorName} · {CLINIC_INFO.credentials}
-        </p>
+            <Button type="submit" className="w-full h-11 text-sm font-medium" disabled={isPending}>
+              {isPending ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-cream-600 mt-8">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-forest-600 font-medium hover:text-forest-700 transition-colors">
+              Create one
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
