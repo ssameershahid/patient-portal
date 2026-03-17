@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "outDirectory": "/home/runner/workspace/artifacts/patient-portal/dist/public",
+  "outDirectory": "/home/runner/workspace/artifacts/patient-portal/out",
   "success": true
 }
