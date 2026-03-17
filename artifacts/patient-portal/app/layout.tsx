@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${dmSans.variable} ${inter.variable} font-body bg-cream-200 text-cream-900`}>
+      <body suppressHydrationWarning className={`${dmSans.variable} ${inter.variable} font-body bg-cream-200 text-cream-900`}>
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -87,9 +87,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
 
         if (cancelled) return
+
+        if (error) {
+          if (error.message?.includes('rate limit')) {
+            console.warn('[AuthProvider] Rate limited — retrying in 2s')
+            setTimeout(() => { if (!cancelled) init() }, 2000)
+            return
+          }
+          console.error('[AuthProvider] Auth init error:', error.message)
+        }
 
         const currentUser = session?.user ?? null
         setUser(currentUser)
@@ -97,7 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (currentUser) {
           await fetchProfile(currentUser)
         }
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.message?.includes('rate limit')) {
+          console.warn('[AuthProvider] Rate limited — retrying in 2s')
+          setTimeout(() => { if (!cancelled) init() }, 2000)
+          return
+        }
         console.error('[AuthProvider] Auth init error:', err)
       }
 
