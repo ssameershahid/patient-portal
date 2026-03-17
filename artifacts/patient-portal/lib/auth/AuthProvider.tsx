@@ -44,6 +44,13 @@ function getRoleFromUser(user: User): 'patient' | 'admin' {
   return 'patient'
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -53,25 +60,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = useCallback(async (currentUser: User) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role, full_name')
-        .eq('id', currentUser.id)
-        .single()
+      const result = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('role, full_name')
+          .eq('id', currentUser.id)
+          .single(),
+        5000,
+        { data: null, error: { message: 'Profile fetch timed out' } as any }
+      )
 
-      if (error) {
-        console.warn('[AuthProvider] Profile fetch failed:', error.message, '— falling back to user metadata')
+      if (result.error || !result.data) {
+        console.warn('[AuthProvider] Profile fetch issue:', result.error?.message, '— using metadata fallback')
         const fallbackRole = getRoleFromUser(currentUser)
         setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
         return
       }
 
-      if (data) {
-        setProfile({ role: data.role ?? 'patient', full_name: data.full_name })
-      } else {
-        const fallbackRole = getRoleFromUser(currentUser)
-        setProfile({ role: fallbackRole, full_name: currentUser.user_metadata?.full_name ?? null })
-      }
+      setProfile({ role: result.data.role ?? 'patient', full_name: result.data.full_name })
     } catch (err) {
       console.error('[AuthProvider] Profile fetch exception:', err)
       const fallbackRole = getRoleFromUser(currentUser)
@@ -83,12 +89,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false
 
     const init = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      if (cancelled) return
-      setUser(currentUser)
-      if (currentUser) {
-        await fetchProfile(currentUser)
+      try {
+        const sessionResult = await withTimeout(
+          supabase.auth.getSession(),
+          5000,
+          { data: { session: null }, error: null }
+        )
+
+        if (cancelled) return
+
+        const currentUser = sessionResult.data.session?.user ?? null
+        setUser(currentUser)
+
+        if (currentUser) {
+          await fetchProfile(currentUser)
+        }
+      } catch (err) {
+        console.error('[AuthProvider] Auth init error:', err)
       }
+
       if (!cancelled) setLoading(false)
     }
 
