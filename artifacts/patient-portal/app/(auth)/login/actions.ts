@@ -20,7 +20,7 @@ export async function login(email: string, password: string): Promise<{ error?: 
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
-    .single()
+    .maybeSingle()
 
   if (profileError) {
     console.warn('[Login] Profile fetch failed:', profileError.message, '— checking user metadata')
