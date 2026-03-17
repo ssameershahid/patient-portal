@@ -37,45 +37,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-cream-200">
-      <div className="hidden lg:flex lg:w-1/2 bg-forest-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-forest-700 via-forest-600 to-forest-800" />
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-warm-300 blur-3xl" />
-          <div className="absolute bottom-32 right-16 w-80 h-80 rounded-full bg-forest-400 blur-3xl" />
-          <div className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full bg-cream-300 blur-3xl" />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="flex items-center gap-3 mb-8">
-            <span className="font-heading font-semibold tracking-wide text-white/90 text-[30px]">Pulse & Function</span>
-          </div>
-          <h2 className="text-4xl font-heading font-bold leading-tight mb-4">
-            Your health journey,<br />all in one place.
-          </h2>
-          <p className="text-lg text-white/70 leading-relaxed max-w-md">
-            Access your appointments, lab results, treatment plans, and communicate with your care team — anytime, anywhere.
-          </p>
-          <div className="mt-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-            <img
-              src="/login-feature.webp"
-              alt="Pulse & Function clinic"
-              className="w-full h-auto object-cover"
-            />
-          </div>
-          <div className="mt-10 flex gap-8">
-            <div>
-              <div className="text-2xl font-heading font-bold text-warm-300">Secure</div>
-              <div className="text-sm text-white/50 mt-1">End-to-end encrypted</div>
-            </div>
-            <div>
-              <div className="text-2xl font-heading font-bold text-warm-300">24/7</div>
-              <div className="text-sm text-white/50 mt-1">Always accessible</div>
-            </div>
-            <div>
-              <div className="text-2xl font-heading font-bold text-warm-300">Private</div>
-              <div className="text-sm text-white/50 mt-1">Your data, your control</div>
-            </div>
-          </div>
-        </div>
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <img
+          src="/login-feature.webp"
+          alt="Pulse & Function"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
