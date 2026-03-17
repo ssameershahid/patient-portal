@@ -78,7 +78,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
-            <span className="text-xl font-heading font-bold text-forest-700">Pulse & Function</span>
+            <span className="font-heading font-bold text-forest-700 text-[30px] text-center">Pulse & Function</span>
           </div>
 
           <div className="mb-8 text-center">
