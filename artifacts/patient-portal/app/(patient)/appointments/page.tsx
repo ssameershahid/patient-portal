@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,37 +9,39 @@ import { formatDate, formatTime } from '@/lib/utils/helpers'
 import Link from 'next/link'
 import { Calendar, Plus } from 'lucide-react'
 import type { AppointmentTypeKey } from '@/lib/utils/constants'
-import CancelAppointmentButton from '@/components/appointments/CancelButton'
 
-export default async function AppointmentsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+const MOCK_UPCOMING = [
+  {
+    id: '1',
+    appointment_type: 'initial_consultation' as AppointmentTypeKey,
+    date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+    start_time: '10:00',
+    end_time: '11:00',
+    format: 'video',
+    status: 'confirmed',
+    used_membership_credit: false,
+  },
+]
 
-  const admin = createAdminClient()
-  const today = new Date().toISOString().split('T')[0]
+const MOCK_PAST = [
+  {
+    id: '2',
+    appointment_type: 'follow_up' as AppointmentTypeKey,
+    date: new Date(Date.now() - 14 * 86400000).toISOString().split('T')[0],
+    start_time: '14:00',
+    end_time: '14:30',
+    format: 'in_person',
+    status: 'completed',
+    used_membership_credit: true,
+  },
+]
 
-  const [upcomingRes, pastRes] = await Promise.all([
-    admin
-      .from('appointments')
-      .select('*')
-      .eq('patient_id', user.id)
-      .gte('date', today)
-      .order('date', { ascending: true }),
-    admin
-      .from('appointments')
-      .select('*')
-      .eq('patient_id', user.id)
-      .lt('date', today)
-      .order('date', { ascending: false })
-      .limit(20),
-  ])
-
-  const upcoming = upcomingRes.data ?? []
-  const past = pastRes.data ?? []
+export default function AppointmentsPage() {
+  const upcoming = MOCK_UPCOMING
+  const past = MOCK_PAST
 
   function AppointmentCard({ appt, showCancel }: { appt: typeof upcoming[0]; showCancel: boolean }) {
-    const typeInfo = APPOINTMENT_TYPES[appt.appointment_type as AppointmentTypeKey]
+    const typeInfo = APPOINTMENT_TYPES[appt.appointment_type]
     return (
       <Card key={appt.id} className="hover:shadow-sm transition-shadow">
         <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -70,7 +72,7 @@ export default async function AppointmentsPage() {
             </div>
           </div>
           {showCancel && appt.status === 'confirmed' && (
-            <CancelAppointmentButton appointmentId={appt.id} />
+            <Button size="sm" variant="destructive">Cancel</Button>
           )}
         </CardContent>
       </Card>

@@ -14,11 +14,14 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setError('')
     setLoading(true)
 
-    const result = await forgotPassword(formData)
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const result = await forgotPassword(email)
 
     if (result?.error) {
       setError(result.error)
@@ -55,7 +58,7 @@ export default function ForgotPasswordPage() {
                 </Link>
               </div>
             ) : (
-              <form action={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">{error}</div>
                 )}

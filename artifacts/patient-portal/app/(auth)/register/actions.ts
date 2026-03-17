@@ -1,22 +1,20 @@
-'use server'
+import { createClient } from '@/lib/supabase/client'
 
-import { createClient } from '@/lib/supabase/server'
-
-export async function register(formData: FormData) {
-  const fullName = formData.get('fullName') as string
-  const email = formData.get('email') as string
-  const phone = formData.get('phone') as string
-  const password = formData.get('password') as string
-
-  const supabase = await createClient()
+export async function register(data: {
+  fullName: string
+  email: string
+  phone: string
+  password: string
+}): Promise<{ error?: string; success?: boolean }> {
+  const supabase = createClient()
 
   const { error } = await supabase.auth.signUp({
-    email,
-    password,
+    email: data.email,
+    password: data.password,
     options: {
       data: {
-        full_name: fullName,
-        phone,
+        full_name: data.fullName,
+        phone: data.phone,
       },
     },
   })

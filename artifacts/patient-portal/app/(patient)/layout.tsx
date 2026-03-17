@@ -1,28 +1,11 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
 import Sidebar from '@/components/layout/Sidebar'
 import MobileHeader from '@/components/layout/MobileHeader'
+import { RequireAuth, useAuth } from '@/lib/auth/AuthProvider'
 
-export default async function PatientLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  const admin = createAdminClient()
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role === 'admin') {
-    redirect('/admin')
-  }
-
+function PatientLayoutInner({ children }: { children: React.ReactNode }) {
+  const { profile } = useAuth()
   const userName = profile?.full_name ?? null
 
   return (
@@ -35,5 +18,13 @@ export default async function PatientLayout({ children }: { children: React.Reac
         </div>
       </main>
     </div>
+  )
+}
+
+export default function PatientLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RequireAuth>
+      <PatientLayoutInner>{children}</PatientLayoutInner>
+    </RequireAuth>
   )
 }

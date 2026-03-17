@@ -1,22 +1,45 @@
-import { createAdminClient } from '@/lib/supabase/admin'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { getInitials, formatDate } from '@/lib/utils/helpers'
 import { Users } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function AdminPatientsPage() {
-  const supabase = createAdminClient()
+const MOCK_PATIENTS = [
+  {
+    id: '1',
+    full_name: 'Emma Thompson',
+    phone: '+44 7700 900001',
+    created_at: '2026-01-15T10:00:00Z',
+    membership: { tier: 'tier_2', status: 'active' },
+  },
+  {
+    id: '2',
+    full_name: 'James Wilson',
+    phone: '+44 7700 900002',
+    created_at: '2026-02-01T10:00:00Z',
+    membership: { tier: 'tier_1', status: 'active' },
+  },
+  {
+    id: '3',
+    full_name: 'Sarah Chen',
+    phone: '+44 7700 900003',
+    created_at: '2026-02-20T10:00:00Z',
+    membership: null,
+  },
+  {
+    id: '4',
+    full_name: 'Michael Brown',
+    phone: '+44 7700 900004',
+    created_at: '2026-03-01T10:00:00Z',
+    membership: null,
+  },
+]
 
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('*, memberships(tier, status)')
-    .eq('role', 'patient')
-    .order('created_at', { ascending: false })
-
-  const patients = profiles ?? []
+export default function AdminPatientsPage() {
+  const patients = MOCK_PATIENTS
 
   return (
     <div>
@@ -28,7 +51,7 @@ export default async function AdminPatientsPage() {
       {patients.length > 0 ? (
         <div className="space-y-3">
           {patients.map((patient) => {
-            const membership = Array.isArray(patient.memberships) ? patient.memberships[0] : null
+            const membership = patient.membership
             return (
               <Link key={patient.id} href={`/admin/patients/${patient.id}`}>
                 <Card className="hover:shadow-sm transition-shadow cursor-pointer">

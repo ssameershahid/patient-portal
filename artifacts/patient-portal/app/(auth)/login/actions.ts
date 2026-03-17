@@ -1,19 +1,11 @@
-'use server'
+import { createClient } from '@/lib/supabase/client'
 
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { redirect } from 'next/navigation'
-
-export async function login(_prevState: { error: string } | null, formData: FormData): Promise<{ error: string }> {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-
+export async function login(email: string, password: string): Promise<{ error?: string; redirect?: string }> {
   if (!email || !password) {
     return { error: 'Email and password are required' }
   }
 
-  const supabase = await createClient()
-
+  const supabase = createClient()
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
@@ -24,16 +16,15 @@ export async function login(_prevState: { error: string } | null, formData: Form
     return { error: 'Login failed. Please try again.' }
   }
 
-  const admin = createAdminClient()
-  const { data: profile } = await admin
+  const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
     .single()
 
   if (profile?.role === 'admin') {
-    redirect('/admin')
+    return { redirect: '/admin' }
   }
 
-  redirect('/dashboard')
+  return { redirect: '/dashboard' }
 }

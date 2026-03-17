@@ -1,25 +1,28 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
 
-export default async function RootPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/AuthProvider'
 
-  if (!user) {
-    redirect('/login')
-  }
+export default function RootPage() {
+  const { user, isAdmin, loading } = useAuth()
+  const router = useRouter()
 
-  const admin = createAdminClient()
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  useEffect(() => {
+    if (loading) return
+    if (!user) {
+      router.replace('/login')
+      return
+    }
+    router.replace(isAdmin ? '/admin' : '/dashboard')
+  }, [user, isAdmin, loading, router])
 
-  if (profile?.role === 'admin') {
-    redirect('/admin')
-  }
-
-  redirect('/dashboard')
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-cream-200">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 border-2 border-forest-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-cream-700">Loading...</p>
+      </div>
+    </div>
+  )
 }

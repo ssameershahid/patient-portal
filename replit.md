@@ -56,24 +56,26 @@ Every package extends `tsconfig.base.json` which sets `composite: true`. The roo
 **Pulse & Function Patient Portal** — Next.js 15 App Router application for Dr Sarah Al-Temimi's functional medicine clinic.
 
 - **Framework**: Next.js 15, React, Tailwind CSS v3, Radix UI
-- **Auth & Data**: Supabase (auth + PostgreSQL database via @supabase/ssr)
+- **Build mode**: Static export (`output: 'export'` in `next.config.mjs`), outputs to `dist/public/`
+- **Auth & Data**: Supabase (auth via browser client `@supabase/ssr`, DB queries deferred)
+- **Auth architecture**: Client-side `AuthProvider` context (`lib/auth/AuthProvider.tsx`) with `useAuth()` hook and `RequireAuth` wrapper component for route protection
 - **Port**: 24832 (assigned by artifact system)
 - **Preview Path**: `/` (root)
+- **Deployment**: Static site served from `artifacts/patient-portal/dist/public`. Build command: `next build` which produces static HTML/CSS/JS. SPA routing via `/* → /index.html` rewrite in artifact.toml.
 - **Design**: Forest green / warm earth / cream palette. DM Sans headings + Inter body.
 - **Supabase Secrets**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
 Key directories:
-- `app/(auth)/` — Login, register, verify, forgot/reset password pages
+- `app/(auth)/` — Login, register, verify, forgot/reset password pages (all client-side auth via browser Supabase client)
 - `app/(patient)/` — Patient dashboard, appointments (list + multi-step booking), messages, documents, food diary, supplements, account, intake
 - `app/(admin)/admin/` — Admin dashboard, patient list, patient detail, calendar, messages, supplements, settings
 - `components/ui/` — Radix-based UI components (Button, Card, Input, Label, Textarea, Badge, Tabs, Select, Dialog, etc.)
-- `components/layout/` — Sidebar, MobileNav, AdminSidebar
-- `components/appointments/` — CancelButton
-- `lib/supabase/` — Client, server, and type definitions
+- `components/layout/` — Sidebar, MobileHeader, AdminSidebar, AdminMobileHeader
+- `lib/auth/` — AuthProvider (React context for auth state), useAuth hook, RequireAuth wrapper
+- `lib/supabase/` — Browser client (`client.ts`), server client (`server.ts` — unused in static export), admin client (`admin.ts` — unused in static export)
 - `lib/utils/` — Constants (appointment types, membership tiers, clinic info), helpers (date formatting)
 - `lib/stripe/` — Placeholder for Stripe integration (TODO)
 - `lib/email/` — Placeholder for Resend email integration (TODO)
-- `middleware.ts` — Auth routing (redirects, role-based access)
 
 Supabase DB tables expected: `profiles`, `appointments`, `memberships`, `intake_forms`, `food_diaries`, `food_diary_entries`, `conversations`, `messages`, `documents`, `supplement_catalogue`, `patient_supplements`
 
@@ -98,7 +100,9 @@ Phase 3 screens built:
 Supporting additions:
 - **Notification banner** on patient dashboard — dismissible alert showing latest clinic announcement from Dr Sarah
 - **Admin sidebar** — added Notifications nav item with bell icon between Messages and Supplements
-- **Middleware** — `/membership` added as protected route; `/discovery` and `/terms` are public
+- **Mobile navigation** — `MobileHeader` and `AdminMobileHeader` hamburger menus with dialog semantics, scroll lock, ESC close
+- **Profile photo upload** — Account page supports file picker, circular avatar preview, validation (JPG/PNG/WebP, 5MB max)
+- **Route protection** — Client-side via `RequireAuth` component (redirects to `/login` if unauthenticated, checks admin role for `/admin` routes). Public routes: `/discovery`, `/terms`
 
 All screens use mock data. Supabase wiring, Stripe, Cal.com, and email integration are deferred.
 

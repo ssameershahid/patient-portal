@@ -1,28 +1,10 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
 import AdminSidebar from '@/components/layout/AdminSidebar'
 import AdminMobileHeader from '@/components/layout/AdminMobileHeader'
+import { RequireAuth } from '@/lib/auth/AuthProvider'
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
-
-  const admin = createAdminClient()
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    redirect('/dashboard')
-  }
-
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cream-200">
       <AdminSidebar />
@@ -33,5 +15,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </main>
     </div>
+  )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <RequireAuth adminOnly>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
+    </RequireAuth>
   )
 }

@@ -17,9 +17,11 @@ export default function RegisterPage() {
   const [successEmail, setSuccessEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setError('')
 
+    const formData = new FormData(e.currentTarget)
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
 
@@ -35,7 +37,12 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const result = await register(formData)
+    const result = await register({
+      fullName: formData.get('fullName') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      password,
+    })
 
     if (result?.error) {
       setError(result.error)
@@ -90,7 +97,7 @@ export default function RegisterPage() {
             <CardDescription>Join to manage your consultations and health journey</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">
                   {error}

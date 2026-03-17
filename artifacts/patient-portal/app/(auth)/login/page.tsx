@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { login } from './actions'
 import { Button } from '@/components/ui/button'
@@ -10,7 +11,31 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { CLINIC_INFO } from '@/lib/utils/constants'
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(login, null)
+  const [error, setError] = useState('')
+  const [isPending, setIsPending] = useState(false)
+  const router = useRouter()
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setError('')
+    setIsPending(true)
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+    const password = formData.get('password') as string
+
+    const result = await login(email, password)
+
+    if (result.error) {
+      setError(result.error)
+      setIsPending(false)
+      return
+    }
+
+    if (result.redirect) {
+      router.push(result.redirect)
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4">
@@ -26,10 +51,10 @@ export default function LoginPage() {
             <CardDescription>Sign in to your account</CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={formAction} className="space-y-4">
-              {state?.error && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
                 <div className="rounded-xl bg-error-light border border-error/20 p-3 text-sm text-error">
-                  {state.error}
+                  {error}
                 </div>
               )}
 

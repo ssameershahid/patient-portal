@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { DM_Sans, Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
+import { AuthProvider } from '@/lib/auth/AuthProvider'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -28,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${dmSans.variable} ${inter.variable} font-body bg-cream-200 text-cream-900`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

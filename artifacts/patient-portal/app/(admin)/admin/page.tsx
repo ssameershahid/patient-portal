@@ -1,4 +1,5 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { APPOINTMENT_TYPES } from '@/lib/utils/constants'
@@ -6,48 +7,43 @@ import { formatTime } from '@/lib/utils/helpers'
 import { Calendar, MessageSquare, Users, TrendingUp } from 'lucide-react'
 import type { AppointmentTypeKey } from '@/lib/utils/constants'
 
-export default async function AdminDashboard() {
-  const supabase = createAdminClient()
+const MOCK_TODAY_APPTS = [
+  {
+    id: '1',
+    start_time: '09:00',
+    appointment_type: 'initial_consultation' as AppointmentTypeKey,
+    format: 'video',
+    status: 'confirmed',
+    patient_name: 'Emma Thompson',
+  },
+  {
+    id: '2',
+    start_time: '11:30',
+    appointment_type: 'follow_up' as AppointmentTypeKey,
+    format: 'in_person',
+    status: 'confirmed',
+    patient_name: 'James Wilson',
+  },
+  {
+    id: '3',
+    start_time: '14:00',
+    appointment_type: 'lab_review' as AppointmentTypeKey,
+    format: 'video',
+    status: 'confirmed',
+    patient_name: 'Sarah Chen',
+  },
+]
 
-  const today = new Date().toISOString().split('T')[0]
-  const weekStart = new Date()
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekEnd.getDate() + 6)
-
-  const [todayApptsRes, unreadRes, activeMembersRes, weekApptsRes] = await Promise.all([
-    supabase
-      .from('appointments')
-      .select('*, profiles!appointments_patient_id_fkey(full_name)')
-      .eq('date', today)
-      .neq('status', 'cancelled')
-      .order('start_time', { ascending: true }),
-    supabase
-      .from('conversations')
-      .select('id')
-      .gt('unread_count_admin', 0),
-    supabase
-      .from('memberships')
-      .select('id')
-      .eq('status', 'active'),
-    supabase
-      .from('appointments')
-      .select('id')
-      .gte('date', weekStart.toISOString().split('T')[0])
-      .lte('date', weekEnd.toISOString().split('T')[0])
-      .neq('status', 'cancelled'),
-  ])
-
-  const todayAppts = todayApptsRes.data ?? []
-  const unreadCount = unreadRes.data?.length ?? 0
-  const activeMembersCount = activeMembersRes.data?.length ?? 0
-  const weekApptsCount = weekApptsRes.data?.length ?? 0
+export default function AdminDashboard() {
+  const todayAppts = MOCK_TODAY_APPTS
+  const unreadCount = 2
+  const activeMembersCount = 12
+  const weekApptsCount = 8
 
   return (
     <div>
       <h1 className="text-2xl font-bold font-heading mb-6">Admin Dashboard</h1>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-white">
           <CardContent className="pt-5">
@@ -106,7 +102,6 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Today's Appointments */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Today&apos;s Appointments</CardTitle>
@@ -122,10 +117,10 @@ export default async function AdminDashboard() {
                     </div>
                     <div>
                       <p className="font-medium text-cream-900">
-                        {(appt.profiles as { full_name: string | null })?.full_name || 'Unknown Patient'}
+                        {appt.patient_name}
                       </p>
                       <p className="text-xs text-cream-700">
-                        {APPOINTMENT_TYPES[appt.appointment_type as AppointmentTypeKey]?.name}
+                        {APPOINTMENT_TYPES[appt.appointment_type]?.name}
                       </p>
                     </div>
                   </div>

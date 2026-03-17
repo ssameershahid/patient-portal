@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,65 +10,36 @@ import { Calendar, ClipboardList, MessageSquare, FileText, Crown } from 'lucide-
 import type { AppointmentTypeKey, MembershipTierKey } from '@/lib/utils/constants'
 import NotificationBanner from '@/components/notifications/NotificationBanner'
 
-export default async function PatientDashboard() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+const MOCK_NEXT_APPOINTMENT = {
+  id: '1',
+  appointment_type: 'initial_consultation' as AppointmentTypeKey,
+  date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+  start_time: '10:00',
+  format: 'video',
+  status: 'confirmed',
+}
 
-  if (!user) return null
+const MOCK_DOCS = [
+  { id: '1', file_name: 'Blood Test Results - March 2026', type: 'lab_results' },
+  { id: '2', file_name: 'Treatment Plan v2', type: 'treatment_plan' },
+  { id: '3', file_name: 'Initial Consultation Notes', type: 'consultation_notes' },
+]
 
-  const admin = createAdminClient()
-  const today = new Date().toISOString().split('T')[0]
+const MOCK_MEMBERSHIP = {
+  tier: 'tier_1' as MembershipTierKey,
+  credits_used: 1,
+  credits_total: 4,
+  current_period_end: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
+  status: 'active',
+}
 
-  const [appointmentRes, intakeRes, diaryRes, membershipRes, documentsRes, conversationRes] = await Promise.all([
-    admin
-      .from('appointments')
-      .select('*')
-      .eq('patient_id', user.id)
-      .gte('date', today)
-      .eq('status', 'confirmed')
-      .order('date', { ascending: true })
-      .limit(1),
-    admin
-      .from('intake_forms')
-      .select('id')
-      .eq('patient_id', user.id)
-      .limit(1),
-    admin
-      .from('food_diaries')
-      .select('id')
-      .eq('patient_id', user.id)
-      .eq('status', 'in_progress')
-      .limit(1),
-    admin
-      .from('memberships')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .limit(1),
-    admin
-      .from('documents')
-      .select('*')
-      .eq('patient_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(3),
-    admin
-      .from('conversations')
-      .select('id, last_message_at, unread_count_patient')
-      .eq('patient_id', user.id)
-      .eq('status', 'active')
-      .limit(1),
-  ])
-
-  const nextAppointment = appointmentRes.data?.[0]
-  const hasIntake = (intakeRes.data?.length ?? 0) > 0
-  const hasActiveDiary = (diaryRes.data?.length ?? 0) > 0
-  const membership = membershipRes.data?.[0]
-  const recentDocs = documentsRes.data ?? []
-  const conversation = conversationRes.data?.[0]
-
-  const pendingTasks: { label: string; href: string }[] = []
-  if (!hasIntake) pendingTasks.push({ label: 'Complete your intake form', href: '/intake' })
-  if (hasActiveDiary) pendingTasks.push({ label: 'Continue your food diary', href: '/food-diary' })
+export default function PatientDashboard() {
+  const nextAppointment = MOCK_NEXT_APPOINTMENT
+  const recentDocs = MOCK_DOCS
+  const membership = MOCK_MEMBERSHIP
+  const pendingTasks = [
+    { label: 'Complete your intake form', href: '/intake' },
+  ]
 
   return (
     <div>
@@ -77,7 +48,6 @@ export default async function PatientDashboard() {
       <NotificationBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Next Appointment */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">
             <div className="p-2 rounded-xl bg-forest-50">
@@ -89,7 +59,7 @@ export default async function PatientDashboard() {
             {nextAppointment ? (
               <div>
                 <p className="font-semibold text-cream-900">
-                  {APPOINTMENT_TYPES[nextAppointment.appointment_type as AppointmentTypeKey]?.name}
+                  {APPOINTMENT_TYPES[nextAppointment.appointment_type]?.name}
                 </p>
                 <p className="text-sm text-cream-700 mt-1">
                   {formatDate(nextAppointment.date)} at {formatTime(nextAppointment.start_time)}
@@ -109,7 +79,6 @@ export default async function PatientDashboard() {
           </CardContent>
         </Card>
 
-        {/* Pending Tasks */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">
             <div className="p-2 rounded-xl bg-warm-100">
@@ -135,7 +104,6 @@ export default async function PatientDashboard() {
           </CardContent>
         </Card>
 
-        {/* Messages */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">
             <div className="p-2 rounded-xl bg-forest-50">
@@ -145,25 +113,12 @@ export default async function PatientDashboard() {
           </CardHeader>
           <CardContent>
             {membership ? (
-              conversation ? (
-                <div>
-                  <p className="text-sm text-cream-700">
-                    {conversation.unread_count_patient > 0
-                      ? `You have ${conversation.unread_count_patient} unread message${conversation.unread_count_patient > 1 ? 's' : ''}`
-                      : 'No new messages'}
-                  </p>
-                  <Link href="/messages" className="inline-block mt-3">
-                    <Button size="sm" variant="secondary">Open Messages</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-sm text-cream-700 mb-3">Start a conversation with Dr Sarah.</p>
-                  <Link href="/messages">
-                    <Button size="sm">Send a Message</Button>
-                  </Link>
-                </div>
-              )
+              <div>
+                <p className="text-sm text-cream-700">No new messages</p>
+                <Link href="/messages" className="inline-block mt-3">
+                  <Button size="sm" variant="secondary">Open Messages</Button>
+                </Link>
+              </div>
             ) : (
               <div className="bg-warm-50 rounded-xl p-4 border border-warm-200">
                 <p className="text-sm font-medium text-warm-700">Members Only</p>
@@ -176,7 +131,6 @@ export default async function PatientDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Documents */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">
             <div className="p-2 rounded-xl bg-forest-50">
@@ -203,7 +157,6 @@ export default async function PatientDashboard() {
           </CardContent>
         </Card>
 
-        {/* Membership Status */}
         {membership && (
           <Card className="md:col-span-2 border-forest-400 bg-forest-50/30">
             <CardHeader className="flex flex-row items-center gap-3 pb-3">
@@ -212,7 +165,7 @@ export default async function PatientDashboard() {
               </div>
               <CardTitle className="text-base">Membership</CardTitle>
               <Badge variant="warm" className="ml-auto">
-                {MEMBERSHIP_TIERS[membership.tier as MembershipTierKey]?.name}
+                {MEMBERSHIP_TIERS[membership.tier]?.name}
               </Badge>
             </CardHeader>
             <CardContent>
