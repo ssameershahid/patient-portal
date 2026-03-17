@@ -46,7 +46,7 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="flex items-center gap-3 mb-8">
-            <span className="text-lg font-heading font-semibold tracking-wide text-white/90">Pulse & Function</span>
+            <span className="font-heading font-semibold tracking-wide text-white/90 text-[30px]">Pulse & Function</span>
           </div>
           <h2 className="text-4xl font-heading font-bold leading-tight mb-4">
             Your health journey,<br />all in one place.
