@@ -88,7 +88,6 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold font-heading text-forest-700">{CLINIC_INFO.name}</h1>
-          <p className="text-cream-700 mt-2">Patient Portal</p>
         </div>
 
         <Card>
