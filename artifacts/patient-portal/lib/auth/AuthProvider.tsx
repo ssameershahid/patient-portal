@@ -44,13 +44,6 @@ function getRoleFromUser(user: User): 'patient' | 'admin' {
   return 'patient'
 }
 
-function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
-  ])
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -65,24 +58,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const query = supabase
+      let timedOut = false
+      const timer = setTimeout(() => { timedOut = true }, 5000)
+
+      const { data, error } = await supabase
         .from('profiles')
         .select('role, full_name')
         .eq('id', currentUser.id)
-        .single()
+        .maybeSingle()
 
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
-      const result = await Promise.race([query, timeoutPromise])
+      clearTimeout(timer)
 
-      if (!result || 'error' in result && result.error || !('data' in result) || !result.data) {
-        const msg = result && 'error' in result ? (result as any).error?.message : 'timed out'
-        console.warn('[AuthProvider] Profile fetch issue:', msg, '— using metadata fallback')
+      if (timedOut || error || !data) {
+        console.warn('[AuthProvider] Profile fetch issue:', error?.message ?? 'no data', '— using metadata fallback')
         fallback()
         return
       }
 
-      const profileData = (result as any).data
-      setProfile({ role: profileData.role ?? 'patient', full_name: profileData.full_name })
+      setProfile({ role: data.role ?? 'patient', full_name: data.full_name })
     } catch (err) {
       console.error('[AuthProvider] Profile fetch exception:', err)
       fallback()
@@ -94,15 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const init = async () => {
       try {
-        const sessionResult = await withTimeout(
-          supabase.auth.getSession(),
-          5000,
-          { data: { session: null }, error: null }
-        )
+        const { data: { session } } = await supabase.auth.getSession()
 
         if (cancelled) return
 
-        const currentUser = sessionResult.data.session?.user ?? null
+        const currentUser = session?.user ?? null
         setUser(currentUser)
 
         if (currentUser) {
