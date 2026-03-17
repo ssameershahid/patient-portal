@@ -9,8 +9,8 @@ modules = ["nodejs-24"]
   [deployment]
   router = "application"
   deploymentTarget = "autoscale"
-  build = ["bash", "-c", "pnpm --filter @workspace/patient-portal run build"]
-  run = ["bash", "-c", "pnpm --filter @workspace/patient-portal run start"]
+  build = ["pnpm", "run", "--filter", "@workspace/patient-portal", "build"]
+  run = ["pnpm", "run", "--filter", "@workspace/patient-portal", "start"]
 
   [deployment.postBuild]
   args = ["pnpm", "store", "prune"]
