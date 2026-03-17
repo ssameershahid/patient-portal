@@ -84,7 +84,7 @@ export default function LoginPage() {
             <span className="text-xl font-heading font-bold text-forest-700">Pulse & Function</span>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-8 text-center">
             <h1 className="text-2xl font-heading font-bold text-cream-900">Welcome back</h1>
             <p className="text-cream-600 mt-1">Sign in to continue to your portal</p>
           </div>
