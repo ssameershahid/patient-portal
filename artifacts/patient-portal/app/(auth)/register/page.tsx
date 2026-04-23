@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { CLINIC_INFO } from '@/lib/utils/constants'
 
 export default function RegisterPage() {
   const [consentTerms, setConsentTerms] = useState(false)
@@ -57,10 +56,14 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-cream-200 px-6 py-12">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold font-heading text-forest-700">{CLINIC_INFO.name}</h1>
+          <div className="flex items-center justify-center mb-[3.75rem]">
+            <img
+              src="https://cdn.prod.website-files.com/69a6c2eb077565b229bb4af2/69ea55ab6115e691d1684040_Screenshot%202026-04-23%20at%2010.22.54%E2%80%AFPM%20-%20Edited.png"
+              alt="Pulse & Function — Dr. Sarah Al-Tamimi"
+              className="h-[6.24rem] w-auto object-contain"
+            />
           </div>
           <Card>
             <CardContent className="text-center py-8">
@@ -84,10 +87,14 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream-200 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-cream-200 px-6 py-12">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold font-heading text-forest-700">{CLINIC_INFO.name}</h1>
+        <div className="flex items-center justify-center mb-[3.75rem]">
+          <img
+            src="https://cdn.prod.website-files.com/69a6c2eb077565b229bb4af2/69ea55ab6115e691d1684040_Screenshot%202026-04-23%20at%2010.22.54%E2%80%AFPM%20-%20Edited.png"
+            alt="Pulse & Function — Dr. Sarah Al-Tamimi"
+            className="h-[6.24rem] w-auto object-contain"
+          />
         </div>
 
         <Card>
