@@ -37,7 +37,7 @@ const config: Config = {
         cream: {
           50: '#FDFAF5',
           100: '#FAF6EF',
-          200: '#F5EDE3',
+          200: '#F8EEE2',
           300: '#EBE1D4',
           400: '#E8E2D8',
           500: '#D4CFC7',
