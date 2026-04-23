@@ -47,7 +47,7 @@ export default function LoginPage() {
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="flex items-center justify-center mb-10">
+          <div className="flex items-center justify-center mb-[3.75rem]">
             <img
               src="https://cdn.prod.website-files.com/69a6c2eb077565b229bb4af2/69ea55ab6115e691d1684040_Screenshot%202026-04-23%20at%2010.22.54%E2%80%AFPM%20-%20Edited.png"
               alt="Pulse & Function — Dr. Sarah Al-Tamimi"
